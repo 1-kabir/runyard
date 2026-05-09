@@ -2,22 +2,30 @@
   "name": "@runyard/ui",
   "version": "0.1.0",
   "type": "module",
-  "scripts": {
-    "build": "svelte-package"
-  },
+  "svelte": "./src/lib/index.ts",
   "exports": {
     ".": {
-      "svelte": "./dist/index.js",
       "types": "./dist/index.d.ts",
+      "svelte": "./src/lib/index.ts",
       "default": "./dist/index.js"
     }
+  },
+  "scripts": {
+    "build": "svelte-package",
+    "dev": "svelte-package -w"
+  },
+  "dependencies": {
+    "@runyard/common": "workspace:*",
+    "@runyard/editor": "workspace:*",
+    "@tauri-apps/api": "2"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "svelte": "latest",
     "@sveltejs/package": "latest",
+    "svelte": "^5.0.0",
+    "svelte2tsx": "latest",
     "typescript": "latest"
   }
 }

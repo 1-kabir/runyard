@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc -w"
   },
   "exports": {
-    ".": "./src/types.ts"
+    ".": {
+      "types": "./dist/types.d.ts",
+      "default": "./src/types.ts"
+    }
   },
   "devDependencies": {
     "typescript": "latest"
