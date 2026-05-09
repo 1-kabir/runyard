@@ -7,10 +7,19 @@
   onMount(async () => {
     platform.current = "desktop";
 
-    const isRootEmptyLeaf = (node: any) => node.type === "leaf" && node.tabs.length === 0;
+    const isLayoutEmpty = (node: any): boolean => {
+        if (node.type === "leaf") return node.tabs.length === 0;
+        if (node.type === "split") return node.children.every((c: any) => isLayoutEmpty(c));
+        return true;
+    };
 
-    // Initialize a default layout if the store is empty or just has one empty leaf
-    if (isRootEmptyLeaf(layoutEngine.layout.root)) {
+    // Force clear if the layout is effectively empty
+    if (isLayoutEmpty(layoutEngine.layout.root)) {
+        layoutEngine.clearLayout();
+    }
+    
+    // Initialize a default layout if the store is empty
+    if (layoutEngine.layout.root.id === "root-leaf" && layoutEngine.layout.root.type === "leaf" && layoutEngine.layout.root.tabs.length === 0) {
       let homeDir = "../../";
       try {
         homeDir = await invoke<string>("get_home_dir");
@@ -32,17 +41,13 @@
         props: {}
       };
 
-      // Reset and build fresh
-      layoutEngine.layout.root = {
-        type: "leaf",
-        id: "root-leaf",
-        tabs: [],
-        activeTabId: null
-      };
-
+      // Add explorer to root leaf
       layoutEngine.addTab("root-leaf", explorerTab);
+      
+      // Split the root leaf
       layoutEngine.splitLeaf("root-leaf", "horizontal");
-
+      
+      // Find the new empty leaf (which was created by splitLeaf) and add Welcome
       const findFirstEmptyLeaf = (node: any): string | null => {
           if (node.type === "leaf" && node.tabs.length === 0) return node.id;
           if (node.type === "split") {

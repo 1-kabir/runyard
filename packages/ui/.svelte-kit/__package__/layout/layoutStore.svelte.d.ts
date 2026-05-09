@@ -17,6 +17,7 @@ declare class LayoutStore {
     private findFirstLeafNotExplorer;
     private findFirstLeaf;
     openEditor(path: string, name: string): void;
+    clearLayout(): void;
 }
 export declare const layoutEngine: LayoutStore;
 export {};

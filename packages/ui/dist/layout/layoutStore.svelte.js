@@ -134,13 +134,13 @@ class LayoutStore {
         }
     }
     splitLeaf(leafId, direction) {
-        if (this.layout.root.id === leafId) {
+        if (this.layout.root.id === leafId && this.layout.root.type === "leaf") {
             const oldRoot = this.layout.root;
-            const newLeaf1 = { ...oldRoot, id: oldRoot.id + "-1" };
+            const newLeaf1 = { ...oldRoot, id: crypto.randomUUID() };
             const newLeaf2 = { type: "leaf", id: crypto.randomUUID(), tabs: [], activeTabId: null };
             this.layout.root = {
                 type: "split",
-                id: leafId,
+                id: crypto.randomUUID(),
                 direction,
                 children: [newLeaf1, newLeaf2],
                 sizes: [50, 50]
@@ -153,7 +153,7 @@ class LayoutStore {
             const idx = parent.children.findIndex(c => c.id === leafId);
             if (idx !== -1) {
                 const oldLeaf = parent.children[idx];
-                const newLeaf1 = { ...oldLeaf, id: oldLeaf.id + "-1" };
+                const newLeaf1 = { ...oldLeaf, id: crypto.randomUUID() };
                 const newLeaf2 = { type: "leaf", id: crypto.randomUUID(), tabs: [], activeTabId: null };
                 const newSplit = {
                     type: "split",
@@ -200,7 +200,6 @@ class LayoutStore {
     }
     findFirstLeafNotExplorer(node) {
         if (node.type === "leaf") {
-            // Find a leaf that isn't just the explorer
             if (!node.tabs.some(t => t.type === "explorer"))
                 return node;
             return null;
@@ -227,8 +226,7 @@ class LayoutStore {
         return null;
     }
     openEditor(path, name) {
-        const tabId = path; // Using path as unique ID for simplicity
-        // Check if already open and focus it
+        const tabId = path;
         const setFocus = (node) => {
             if (node.type === "leaf") {
                 if (node.tabs.some(t => t.id === tabId)) {
@@ -248,7 +246,6 @@ class LayoutStore {
             this.save();
             return;
         }
-        // Otherwise, create and add it
         const newTab = {
             id: tabId,
             type: "editor",
@@ -261,6 +258,17 @@ class LayoutStore {
             targetLeaf.activeTabId = newTab.id;
             this.save();
         }
+    }
+    clearLayout() {
+        this.layout = {
+            root: {
+                type: "leaf",
+                id: "root-leaf",
+                tabs: [],
+                activeTabId: null
+            }
+        };
+        this.save();
     }
 }
 export const layoutEngine = new LayoutStore();
