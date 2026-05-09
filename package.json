@@ -1,0 +1,17 @@
+{
+  "name": "runyard-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,svelte,js,jsx,json,md,css}\""
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "prettier": "latest",
+    "prettier-plugin-svelte": "latest",
+    "typescript": "latest"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

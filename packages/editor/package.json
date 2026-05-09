@@ -1,0 +1,19 @@
+{
+  "name": "@runyard/editor",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@codemirror/state": "latest",
+    "@codemirror/view": "latest",
+    "@codemirror/basic-setup": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

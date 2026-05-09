@@ -1,0 +1,14 @@
+{
+  "name": "@runyard/common",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "exports": {
+    ".": "./src/types.ts"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}
