@@ -14,6 +14,15 @@ This document outlines the mandatory rules, constraints, and methodologies for A
 
 ---
 
+GENERAL RULES:
+- Use Svelte 5 Runes ($state, $derived, $effect) throughout. No legacy Svelte 4 syntax.
+- No inline styles — CSS custom properties and scoped component styles only.
+- Every component file should have a clear single responsibility.
+- Use brave-search to verify latest stable versions of all CodeMirror 6 packages, @tauri-apps/api v2, and any other dependencies before writing package.json files.
+- TypeScript strict mode everywhere.
+- Do not add any dependencies that are not directly needed for this milestone.
+---
+
 ## 📜 The Prime Directives
 1. **Always Ask. Never Assume.** Stop and confirm before destructive, ambiguous, or large-scope actions.
 2. **Never Do More Than Asked.** Fix the specific issue. Mention others, but don't dive in without approval.

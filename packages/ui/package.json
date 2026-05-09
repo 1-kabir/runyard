@@ -10,7 +10,8 @@
       "svelte": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./global.css": "./dist/global.css"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
@@ -21,6 +22,7 @@
     "typescript": "latest"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "@runyard/editor": "workspace:^",
     "@tauri-apps/api": "^2"
   }

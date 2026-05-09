@@ -22,6 +22,13 @@
         props: { content: "// Welcome to Runyard\nconsole.log('Hello, AI World!');" }
       };
 
+      const settingsTab: Tab = {
+        id: "initial-settings",
+        type: "settings",
+        title: "Settings",
+        props: {}
+      };
+
       // Create a split layout: Explorer on left, Editor on right
       // We use the splitLeaf operation to split the root
       layoutEngine.addTab("root-leaf", explorerTab);
@@ -45,6 +52,7 @@
       const emptyLeafId = findFirstEmptyLeaf(layoutEngine.layout.root);
       if (emptyLeafId) {
           layoutEngine.addTab(emptyLeafId, welcomeTab);
+          layoutEngine.addTab(emptyLeafId, settingsTab);
       }
       
       // Set the sizes for the initial split
