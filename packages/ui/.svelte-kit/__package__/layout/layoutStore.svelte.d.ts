@@ -13,6 +13,10 @@ declare class LayoutStore {
     splitLeaf(leafId: string, direction: "horizontal" | "vertical"): void;
     resizeLeaf(splitId: string, sizes: number[]): void;
     popOutTab(tabId: string): void;
+    setTabDirty(tabId: string, dirty: boolean): void;
+    private findFirstLeafNotExplorer;
+    private findFirstLeaf;
+    openEditor(path: string, name: string): void;
 }
 export declare const layoutEngine: LayoutStore;
 export {};

@@ -177,5 +177,90 @@ class LayoutStore {
     popOutTab(tabId) {
         console.log(`[popOutTab] Popping out tab ${tabId} into a new window...`);
     }
+    setTabDirty(tabId, dirty) {
+        const updateInNode = (node) => {
+            if (node.type === "leaf") {
+                const tab = node.tabs.find(t => t.id === tabId);
+                if (tab && tab.dirty !== dirty) {
+                    tab.dirty = dirty;
+                    return true;
+                }
+            }
+            else if (node.type === "split") {
+                for (const child of node.children) {
+                    if (updateInNode(child))
+                        return true;
+                }
+            }
+            return false;
+        };
+        if (updateInNode(this.layout.root)) {
+            this.save();
+        }
+    }
+    findFirstLeafNotExplorer(node) {
+        if (node.type === "leaf") {
+            // Find a leaf that isn't just the explorer
+            if (!node.tabs.some(t => t.type === "explorer"))
+                return node;
+            return null;
+        }
+        if (node.type === "split") {
+            for (const child of node.children) {
+                const found = this.findFirstLeafNotExplorer(child);
+                if (found)
+                    return found;
+            }
+        }
+        return null;
+    }
+    findFirstLeaf(node) {
+        if (node.type === "leaf")
+            return node;
+        if (node.type === "split") {
+            for (const child of node.children) {
+                const found = this.findFirstLeaf(child);
+                if (found)
+                    return found;
+            }
+        }
+        return null;
+    }
+    openEditor(path, name) {
+        const tabId = path; // Using path as unique ID for simplicity
+        // Check if already open and focus it
+        const setFocus = (node) => {
+            if (node.type === "leaf") {
+                if (node.tabs.some(t => t.id === tabId)) {
+                    node.activeTabId = tabId;
+                    return true;
+                }
+            }
+            else if (node.type === "split") {
+                for (const child of node.children) {
+                    if (setFocus(child))
+                        return true;
+                }
+            }
+            return false;
+        };
+        if (setFocus(this.layout.root)) {
+            this.save();
+            return;
+        }
+        // Otherwise, create and add it
+        const newTab = {
+            id: tabId,
+            type: "editor",
+            title: name,
+            props: { filePath: path }
+        };
+        let targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) || this.findFirstLeaf(this.layout.root);
+        if (targetLeaf) {
+            targetLeaf.tabs.push(newTab);
+            targetLeaf.activeTabId = newTab.id;
+            this.save();
+        }
+    }
 }
 export const layoutEngine = new LayoutStore();

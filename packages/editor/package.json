@@ -9,9 +9,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@codemirror/basic-setup": "latest",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-python": "^6.2.1",
     "@codemirror/state": "latest",
-    "@codemirror/view": "latest",
-    "@codemirror/basic-setup": "latest"
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "@codemirror/view": "latest"
   },
   "devDependencies": {
     "typescript": "latest"

@@ -16,8 +16,12 @@
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "svelte": "latest",
     "@sveltejs/package": "latest",
+    "svelte": "latest",
     "typescript": "latest"
+  },
+  "dependencies": {
+    "@runyard/editor": "workspace:^",
+    "@tauri-apps/api": "^2"
   }
 }

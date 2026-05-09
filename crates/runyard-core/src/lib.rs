@@ -89,10 +89,9 @@ pub mod commands {
     }
 }
 
-pub use commands::*;
-
 #[cfg(test)]
 mod tests {
+    use super::commands::*;
     use super::*;
     use std::fs::File;
     use tempfile::tempdir;
