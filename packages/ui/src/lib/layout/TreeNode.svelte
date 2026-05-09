@@ -79,12 +79,16 @@
     cursor: pointer;
   }
   .row:hover {
-    background-color: #2a2d2e;
+    background-color: var(--bg-secondary);
   }
   .icon {
-    margin-right: 6px;
-    font-size: 14px;
-    line-height: 1;
+    margin-right: 8px;
+    font-size: 16px;
+    width: 16px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .name {
     white-space: nowrap;

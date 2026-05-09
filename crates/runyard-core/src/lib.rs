@@ -87,6 +87,18 @@ pub mod commands {
         let branch = head.shorthand().map(|s| s.to_string());
         Ok(branch)
     }
+
+    #[tauri::command]
+    pub fn get_home_dir() -> Result<String, String> {
+        #[cfg(target_os = "windows")]
+        {
+            std::env::var("USERPROFILE").map_err(|e| e.to_string())
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            std::env::var("HOME").map_err(|e| e.to_string())
+        }
+    }
 }
 
 #[cfg(test)]

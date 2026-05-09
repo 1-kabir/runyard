@@ -59,13 +59,13 @@
 
 <style>
   .status-bar {
-    height: 22px;
+    height: 24px;
     background-color: var(--statusbar-bg);
     color: var(--statusbar-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 10px;
+    padding: 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 11px;
     border-top: 1px solid var(--border);
@@ -80,24 +80,32 @@
   }
 
   .item {
-    padding: 0 8px;
+    padding: 0 12px;
     height: 100%;
     display: flex;
     align-items: center;
     cursor: default;
+    transition: background 0.2s;
   }
 
   .item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(128, 128, 128, 0.1);
   }
 
   .icon {
-    margin-right: 4px;
+    margin-right: 6px;
+    font-size: 14px;
   }
 
   .connection {
     background-color: var(--accent);
     color: white;
     font-weight: 600;
+    padding: 0 12px;
+  }
+  
+  .connection:hover {
+    background-color: var(--accent);
+    filter: brightness(1.1);
   }
 </style>

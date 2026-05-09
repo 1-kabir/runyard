@@ -63,14 +63,14 @@
 </div>
 
 <style>
-  .tab-bar { display: flex; background: #252526; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+  .tab-bar { display: flex; background: var(--tab-bg); overflow-x: auto; flex-shrink: 0; scrollbar-width: none; border-bottom: 1px solid var(--border); }
   .tab-bar::-webkit-scrollbar { display: none; }
-  .tab { padding: 8px 12px; background: #2d2d2d; color: #969696; display: flex; align-items: center; gap: 8px; cursor: pointer; border-right: 1px solid #1e1e1e; min-width: 120px; max-width: 200px; font-family: sans-serif; font-size: 13px; position: relative; user-select: none; }
-  .tab.active { background: #1e1e1e; color: #ffffff; }
+  .tab { padding: 8px 16px; background: var(--tab-bg); color: var(--tab-text); display: flex; align-items: center; gap: 8px; cursor: pointer; border-right: 1px solid var(--border); min-width: 120px; max-width: 240px; font-family: inherit; font-size: 13px; position: relative; user-select: none; transition: background 0.2s, color 0.2s; }
+  .tab.active { background: var(--tab-active-bg); color: var(--tab-active-text); }
   .tab.dragging { opacity: 0.5; }
-  .dirty-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; }
-  .close-btn { background: none; border: none; color: inherit; cursor: pointer; opacity: 0; font-size: 16px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; padding: 0;}
-  .tab:hover .close-btn, .tab.active .close-btn { opacity: 1; }
-  .close-btn:hover { background: rgba(255,255,255,0.1); }
+  .dirty-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .close-btn { background: none; border: none; color: inherit; cursor: pointer; opacity: 0; font-size: 16px; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 4px; padding: 0; margin-left: 4px;}
+  .tab:hover .close-btn, .tab.active .close-btn { opacity: 0.6; }
+  .close-btn:hover { background: rgba(128,128,128,0.2); opacity: 1 !important; }
   .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; pointer-events: none; }
 </style>

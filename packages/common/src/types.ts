@@ -8,7 +8,8 @@ export type TabType =
   | "git"
   | "settings"
   | "agent-manager"
-  | "orchestrator";
+  | "orchestrator"
+  | "welcome";
 
 export interface Tab {
   id: string;

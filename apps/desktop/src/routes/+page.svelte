@@ -1,42 +1,38 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Layout, layoutEngine, platform } from "@runyard/ui";
+  import { invoke } from "@tauri-apps/api/core";
   import type { Tab } from "@runyard/common";
 
-  onMount(() => {
+  onMount(async () => {
     platform.current = "desktop";
     
     // Initialize a default layout if the store is empty
     if (layoutEngine.layout.root.type === "leaf" && layoutEngine.layout.root.tabs.length === 0) {
+      let homeDir = "../../";
+      try {
+        homeDir = await invoke<string>("get_home_dir");
+      } catch (e) {
+        console.error("Failed to get home dir", e);
+      }
+
       const explorerTab: Tab = {
         id: "initial-explorer",
         type: "explorer",
         title: "Explorer",
-        props: {}
+        props: { workspacePath: homeDir }
       };
 
       const welcomeTab: Tab = {
         id: "initial-welcome",
-        type: "editor",
-        title: "Welcome.ts",
-        props: { content: "// Welcome to Runyard\nconsole.log('Hello, AI World!');" }
-      };
-
-      const settingsTab: Tab = {
-        id: "initial-settings",
-        type: "settings",
-        title: "Settings",
+        type: "welcome",
+        title: "Welcome",
         props: {}
       };
 
-      // Create a split layout: Explorer on left, Editor on right
-      // We use the splitLeaf operation to split the root
+      // Create a split layout: Explorer on left, Welcome on right
       layoutEngine.addTab("root-leaf", explorerTab);
       layoutEngine.splitLeaf("root-leaf", "horizontal");
-      
-      // After splitLeaf, the original root becomes a child of the new split root.
-      // However, my splitLeaf implementation creates new UUIDs.
-      // Let's just find the first leaf and add the editor tab.
       
       const findFirstEmptyLeaf = (node: any): string | null => {
           if (node.type === "leaf" && node.tabs.length === 0) return node.id;
@@ -52,10 +48,8 @@
       const emptyLeafId = findFirstEmptyLeaf(layoutEngine.layout.root);
       if (emptyLeafId) {
           layoutEngine.addTab(emptyLeafId, welcomeTab);
-          layoutEngine.addTab(emptyLeafId, settingsTab);
       }
       
-      // Set the sizes for the initial split
       if (layoutEngine.layout.root.type === "split") {
           layoutEngine.resizeLeaf(layoutEngine.layout.root.id, [20, 80]);
       }

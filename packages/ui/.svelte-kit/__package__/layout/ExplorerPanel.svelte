@@ -61,21 +61,24 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background-color: #252526;
+    background-color: var(--sidebar-bg);
     overflow: hidden;
+    border-right: 1px solid var(--border);
   }
   .header {
     font-size: 11px;
-    font-weight: 600;
-    color: #cccccc;
-    padding: 10px 16px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 12px 16px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     flex-shrink: 0;
+    user-select: none;
   }
   .tree {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    padding-top: 4px;
   }
 </style>

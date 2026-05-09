@@ -1,5 +1,5 @@
 export type WorkspaceId = string;
-export type TabType = "editor" | "explorer" | "terminal" | "chat" | "git" | "settings" | "agent-manager" | "orchestrator";
+export type TabType = "editor" | "explorer" | "terminal" | "chat" | "git" | "settings" | "agent-manager" | "orchestrator" | "welcome";
 export interface Tab {
     id: string;
     type: TabType;
