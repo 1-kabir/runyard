@@ -6,9 +6,11 @@
 
   onMount(async () => {
     platform.current = "desktop";
-    
-    // Initialize a default layout if the store is empty
-    if (layoutEngine.layout.root.type === "leaf" && layoutEngine.layout.root.tabs.length === 0) {
+
+    const isRootEmptyLeaf = (node: any) => node.type === "leaf" && node.tabs.length === 0;
+
+    // Initialize a default layout if the store is empty or just has one empty leaf
+    if (isRootEmptyLeaf(layoutEngine.layout.root)) {
       let homeDir = "../../";
       try {
         homeDir = await invoke<string>("get_home_dir");
@@ -30,10 +32,17 @@
         props: {}
       };
 
-      // Create a split layout: Explorer on left, Welcome on right
+      // Reset and build fresh
+      layoutEngine.layout.root = {
+        type: "leaf",
+        id: "root-leaf",
+        tabs: [],
+        activeTabId: null
+      };
+
       layoutEngine.addTab("root-leaf", explorerTab);
       layoutEngine.splitLeaf("root-leaf", "horizontal");
-      
+
       const findFirstEmptyLeaf = (node: any): string | null => {
           if (node.type === "leaf" && node.tabs.length === 0) return node.id;
           if (node.type === "split") {
@@ -49,7 +58,7 @@
       if (emptyLeafId) {
           layoutEngine.addTab(emptyLeafId, welcomeTab);
       }
-      
+
       if (layoutEngine.layout.root.type === "split") {
           layoutEngine.resizeLeaf(layoutEngine.layout.root.id, [20, 80]);
       }

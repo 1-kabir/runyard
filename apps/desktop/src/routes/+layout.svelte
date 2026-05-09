@@ -18,17 +18,21 @@
 
 <style>
   .app-container {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     background-color: var(--bg);
     color: var(--text);
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   .content {
     flex: 1;
     display: flex;
     overflow: hidden;
+    position: relative;
   }
 </style>

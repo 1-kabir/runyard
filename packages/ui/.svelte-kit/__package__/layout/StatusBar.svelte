@@ -66,11 +66,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 11px;
     border-top: 1px solid var(--border);
     flex-shrink: 0;
     user-select: none;
+    z-index: 100;
   }
 
   .left, .right {
@@ -85,27 +86,43 @@
     display: flex;
     align-items: center;
     cursor: default;
-    transition: background 0.2s;
+    transition: background 0.15s ease;
+    border-right: 1px solid transparent;
   }
 
   .item:hover {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: rgba(128, 128, 128, 0.15);
   }
 
   .icon {
     margin-right: 6px;
-    font-size: 14px;
+    font-size: 13px;
+    opacity: 0.8;
   }
 
   .connection {
     background-color: var(--accent);
-    color: white;
-    font-weight: 600;
-    padding: 0 12px;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 0 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
   
   .connection:hover {
     background-color: var(--accent);
-    filter: brightness(1.1);
+    filter: contrast(1.1);
+  }
+
+  .git {
+    font-weight: 500;
+  }
+
+  .path {
+    opacity: 0.8;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
