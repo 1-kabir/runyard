@@ -43,10 +43,12 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div 
     bind:this={container}
     class="split-pane {node.direction} {isDragging ? 'dragging' : ''}"
     onpointermove={onPointerMove}
+    role="presentation"
 >
   {#each node.children as child, i}
     <div class="pane" style="flex: {node.sizes[i] || (100 / node.children.length)}%;">

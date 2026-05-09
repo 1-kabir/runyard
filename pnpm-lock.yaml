@@ -23,6 +23,12 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@runyard/common':
+        specifier: workspace:^
+        version: link:../../packages/common
+      '@runyard/ui':
+        specifier: workspace:^
+        version: link:../../packages/ui
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.0
