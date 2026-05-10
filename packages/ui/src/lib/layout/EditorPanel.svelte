@@ -19,6 +19,7 @@
   let currentContent = $state("");
   let loadError = $state<string | null>(null);
   let showWarningModal = $state(false);
+  let showExternalChangeModal = $state(false);
   let warningMessage = $state("");
 
   let isDirty = $derived(savedContent !== currentContent && savedContent !== "");
@@ -96,9 +97,14 @@
 
     // External change listener
     const unlisten = listen<string>("fs:changed", (event) => {
-      if (event.payload === filePath && !isDirty) {
-        console.log(`[Editor] External change detected for ${filePath}, refreshing...`);
-        loadFile();
+      if (event.payload === filePath) {
+        if (!isDirty) {
+          console.log(`[Editor] External change detected for ${filePath}, refreshing...`);
+          loadFile();
+        } else {
+          console.log(`[Editor] External change detected for ${filePath} but editor is dirty, showing prompt.`);
+          showExternalChangeModal = true;
+        }
       }
     });
 
@@ -125,6 +131,21 @@
     onCancel={() => {
         showWarningModal = false;
         layoutEngine.closeTab(filePath);
+    }}
+  />
+
+  <Modal
+    bind:show={showExternalChangeModal}
+    title="File Changed Externally"
+    message={`The file "${filePath}" has been modified by another program. Your changes in Runyard are currently unsaved. Do you want to reload the file and lose your changes?`}
+    confirmLabel="Reload File"
+    cancelLabel="Keep My Changes"
+    onConfirm={() => {
+      showExternalChangeModal = false;
+      loadFile();
+    }}
+    onCancel={() => {
+      showExternalChangeModal = false;
     }}
   />
 

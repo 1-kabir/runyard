@@ -78,7 +78,7 @@ pub mod commands {
             let (tx, rx) = std::sync::mpsc::channel();
             let mut watcher = notify::RecommendedWatcher::new(tx, Config::default()).unwrap();
 
-            watcher.watch(Path::new(&path_clone), RecursiveMode::NonRecursive).unwrap();
+            watcher.watch(Path::new(&path_clone), RecursiveMode::Recursive).unwrap();
 
             for res in rx {
                 match res {
