@@ -1,4 +1,5 @@
 import type { Layout, LayoutNode, LeafNode, SplitNode, Tab } from "@runyard/common";
+import { appStatus } from "./appStatusStore.svelte.js";
 
 const DEFAULT_LAYOUT: Layout = {
   root: {
@@ -268,6 +269,7 @@ class LayoutStore {
     let targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) || this.findFirstLeaf(this.layout.root);
     
     if (targetLeaf) {
+      appStatus.markAsJustOpened(path);
       targetLeaf.tabs.push(newTab);
       targetLeaf.activeTabId = newTab.id;
       this.save();

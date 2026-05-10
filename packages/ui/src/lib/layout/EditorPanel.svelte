@@ -4,6 +4,7 @@
   import { listen } from "@tauri-apps/api/event";
   import { setupEditor } from "@runyard/editor";
   import { appStatus } from "./appStatusStore.svelte.js";
+  import { layoutEngine } from "./layoutStore.svelte.js";
   import { TriangleAlert } from "lucide-svelte";
   import Modal from "../Modal.svelte";
 
@@ -44,7 +45,11 @@
       console.error("[EditorPanel] Failed to read file", filePath, e);
       if (!silent) {
         warningMessage = `${e}`;
-        showWarningModal = true;
+        if (appStatus.consumeJustOpened(filePath)) {
+          showWarningModal = true;
+        } else {
+          loadError = warningMessage;
+        }
       }
     }
   }
@@ -108,7 +113,7 @@
     }}
     onCancel={() => {
         showWarningModal = false;
-        loadError = warningMessage;
+        layoutEngine.closeTab(filePath);
     }}
   />
 
