@@ -71,7 +71,9 @@ class LayoutStore {
             if (node.type === "leaf") {
                 const idx = node.tabs.findIndex(t => t.id === tabId);
                 if (idx !== -1) {
-                    node.tabs.splice(idx, 1);
+                    const newTabs = [...node.tabs];
+                    newTabs.splice(idx, 1);
+                    node.tabs = newTabs; // Force trigger deep reactivity
                     if (node.activeTabId === tabId) {
                         node.activeTabId = node.tabs.length > 0 ? node.tabs[Math.max(0, idx - 1)].id : null;
                     }

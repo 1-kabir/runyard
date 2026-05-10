@@ -49,7 +49,10 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div 
       class="tab {activeTabId === tab.id ? 'active' : ''} {draggedTabId === tab.id ? 'dragging' : ''}"
-      onclick={() => layoutEngine.setActiveTab(tab.id)}
+      onpointerdown={(e) => { 
+        if ((e.target as HTMLElement).closest('.close-btn')) return;
+        layoutEngine.setActiveTab(tab.id); 
+      }}
       draggable="true"
       ondragstart={(e) => onDragStart(e, tab.id)}
       ondragover={onDragOver}
@@ -57,7 +60,11 @@
     >
       <span class="title">{tab.title}</span>
       {#if tab.dirty}<span class="dirty-dot"></span>{/if}
-      <button class="close-btn" onclick={(e) => { e.stopPropagation(); layoutEngine.closeTab(tab.id); }}>&times;</button>
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="close-btn" onpointerdown={(e) => { e.stopPropagation(); layoutEngine.closeTab(tab.id); }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </div>
     </div>
   {/each}
 </div>

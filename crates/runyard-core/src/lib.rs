@@ -20,18 +20,23 @@ pub mod commands {
 
     #[tauri::command]
     pub fn fs_list(path: String) -> Result<Vec<FsEntry>, String> {
-        let entries = fs::read_dir(&path).map_err(|e| e.to_string())?;
+        let entries = match fs::read_dir(&path) {
+            Ok(e) => e,
+            Err(e) => return Err(e.to_string()),
+        };
         let mut result = Vec::new();
 
         for entry in entries {
             if let Ok(entry) = entry {
-                let meta = entry.metadata().map_err(|e| e.to_string())?;
-                let kind = if meta.is_dir() { "dir" } else { "file" };
+                let (kind, size) = match entry.metadata() {
+                    Ok(meta) => (if meta.is_dir() { "dir" } else { "file" }, meta.len()),
+                    Err(_) => ("file", 0) // Fallback if we can't read metadata (e.g. permissions)
+                };
                 result.push(FsEntry {
                     name: entry.file_name().to_string_lossy().into_owned(),
                     path: entry.path().to_string_lossy().into_owned(),
                     kind: kind.to_string(),
-                    size: meta.len(),
+                    size,
                 });
             }
         }
@@ -93,7 +98,15 @@ pub mod commands {
         // Try standard environment variables
         let path = if cfg!(target_os = "windows") {
             std::env::var("USERPROFILE")
-                .or_else(|_| std::env::var("HOME"))
+                .or_else(|_| {
+                    let drive = std::env::var("HOMEDRIVE").unwrap_or_default();
+                    let path = std::env::var("HOMEPATH").unwrap_or_default();
+                    if drive.is_empty() || path.is_empty() {
+                        Err("No home".to_string())
+                    } else {
+                        Ok(format!("{}{}", drive, path))
+                    }
+                })
                 .map_err(|e| e.to_string())?
         } else {
             std::env::var("HOME")

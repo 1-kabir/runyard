@@ -23,7 +23,10 @@
 
   async function loadFile(silent = false) {
     try {
+      console.log(`[EditorPanel] Loading file: ${filePath}`);
       const content = await invoke<string>("fs_read", { path: filePath });
+      console.log(`[EditorPanel] Successfully loaded content of size: ${content.length}`);
+      
       savedContent = content;
       if (!silent) {
           currentContent = content;
@@ -32,7 +35,14 @@
           }
       }
     } catch (e) {
-      console.error("Failed to read file", e);
+      console.error("[EditorPanel] Failed to read file", filePath, e);
+      if (!silent) {
+        const errorContent = `// Error loading file: ${filePath}\n// ${e}`;
+        currentContent = errorContent;
+        if (editorInstance) {
+          editorInstance.setValue(errorContent);
+        }
+      }
     }
   }
 
