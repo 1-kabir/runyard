@@ -4,6 +4,7 @@
   import { listen } from "@tauri-apps/api/event";
   import { setupEditor } from "@runyard/editor";
   import { appStatus } from "./appStatusStore.svelte.js";
+  import { TriangleAlert } from "lucide-svelte";
 
   let { filePath, onDirtyChange } = $props<{ 
     filePath: string, 
