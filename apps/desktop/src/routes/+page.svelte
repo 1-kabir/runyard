@@ -41,6 +41,13 @@
         props: {}
       };
 
+      const settingsTab: Tab = {
+        id: "initial-settings",
+        type: "settings",
+        title: "Settings",
+        props: {}
+      };
+
       // Add explorer to root leaf
       layoutEngine.addTab("root-leaf", explorerTab);
       
@@ -62,6 +69,7 @@
       const emptyLeafId = findFirstEmptyLeaf(layoutEngine.layout.root);
       if (emptyLeafId) {
           layoutEngine.addTab(emptyLeafId, welcomeTab);
+          layoutEngine.addTab(emptyLeafId, settingsTab);
       }
 
       if (layoutEngine.layout.root.type === "split") {

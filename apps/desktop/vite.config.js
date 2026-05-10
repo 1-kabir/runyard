@@ -35,7 +35,7 @@ export default defineConfig(async () => ({
       "@codemirror/commands",
       "@codemirror/search",
       "@codemirror/autocomplete",
-      "@fontsource/inter"
+      "@fontsource-variable/google-sans-flex"
     ]
   },
 

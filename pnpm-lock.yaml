@@ -53,6 +53,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.42.1
         version: 6.42.1
+      '@fontsource-variable/google-sans-flex':
+        specifier: ^5.2.3
+        version: 5.2.3
       '@fontsource/inter':
         specifier: ^5.2.8
         version: 5.2.8
@@ -133,6 +136,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@fontsource-variable/google-sans-flex':
+        specifier: ^5.2.3
+        version: 5.2.3
       '@fontsource/inter':
         specifier: ^5.2.8
         version: 5.2.8
@@ -365,6 +371,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/google-sans-flex@5.2.3':
+    resolution: {integrity: sha512-g5z9WANJW56gZTWJvu7mIHOiHJaffkk/dhOKqEiK4Nxnsk8lnGnijvGt4vF4KD2KWzscXBOB9XR2sfvTPSi5hA==}
 
   '@fontsource/inter@5.2.8':
     resolution: {integrity: sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==}
@@ -1178,6 +1187,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.12':
     optional: true
+
+  '@fontsource-variable/google-sans-flex@5.2.3': {}
 
   '@fontsource/inter@5.2.8': {}
 

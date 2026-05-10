@@ -14,6 +14,7 @@
   let editorInstance: any = null;
   let savedContent = $state("");
   let currentContent = $state("");
+  let loadError = $state<string | null>(null);
 
   let isDirty = $derived(savedContent !== currentContent);
 
@@ -23,6 +24,7 @@
 
   async function loadFile(silent = false) {
     try {
+      loadError = null;
       console.log(`[EditorPanel] Loading file: ${filePath}`);
       const content = await invoke<string>("fs_read", { path: filePath });
       console.log(`[EditorPanel] Successfully loaded content of size: ${content.length}`);
@@ -37,16 +39,13 @@
     } catch (e) {
       console.error("[EditorPanel] Failed to read file", filePath, e);
       if (!silent) {
-        const errorContent = `// Error loading file: ${filePath}\n// ${e}`;
-        currentContent = errorContent;
-        if (editorInstance) {
-          editorInstance.setValue(errorContent);
-        }
+        loadError = `${e}`;
       }
     }
   }
 
   async function saveFile(content: string) {
+    if (loadError) return;
     try {
       await invoke("fs_write", { path: filePath, contents: content });
       savedContent = content;
@@ -92,16 +91,77 @@
   });
 </script>
 
-<div bind:this={container} class="editor-panel"></div>
+<div class="editor-wrapper">
+  {#if loadError}
+    <div class="error-overlay">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Failed to load file</div>
+      <div class="error-msg">{loadError}</div>
+      <div class="error-path">{filePath}</div>
+    </div>
+  {/if}
+  <div bind:this={container} class="editor-panel" style:display={loadError ? 'none' : 'block'}></div>
+</div>
 
 <style>
+  .editor-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: var(--bg);
+  }
+
   .editor-panel { 
     width: 100%; 
     height: 100%; 
     overflow: hidden; 
-    background-color: #1e1e1e; 
+    background-color: var(--bg); 
   }
   
+  .error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg);
+    color: var(--text-secondary);
+    padding: 20px;
+    text-align: center;
+  }
+
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .error-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .error-msg {
+    font-size: 14px;
+    margin-bottom: 16px;
+    max-width: 600px;
+    word-break: break-word;
+  }
+
+  .error-path {
+    font-family: monospace;
+    font-size: 12px;
+    background: var(--bg-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
   /* Ensure CodeMirror fills the container */
   :global(.cm-editor) { 
     height: 100%; 
@@ -121,9 +181,9 @@
     background: transparent;
   }
   :global(.cm-scroller::-webkit-scrollbar-thumb) {
-    background: rgba(255,255,255,0.1);
+    background: rgba(128,128,128,0.2);
   }
   :global(.cm-scroller::-webkit-scrollbar-thumb:hover) {
-    background: rgba(255,255,255,0.2);
+    background: rgba(128,128,128,0.3);
   }
 </style>
