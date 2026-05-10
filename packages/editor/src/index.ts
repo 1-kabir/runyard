@@ -4,7 +4,7 @@ import { basicSetup } from "@codemirror/basic-setup";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { history, historyKeymap } from "@codemirror/commands";
+import { history, historyKeymap, undo, redo } from "@codemirror/commands";
 import { indentWithTab } from "@codemirror/commands";
 
 export interface EditorOptions {
@@ -25,6 +25,9 @@ export function setupEditor(options: EditorOptions) {
     history(),
     keymap.of([
       ...historyKeymap,
+      { key: "Mod-z", run: undo, preventDefault: true },
+      { key: "Mod-y", run: redo, preventDefault: true },
+      { key: "Mod-Shift-z", run: redo, preventDefault: true },
       indentWithTab
     ]),
     EditorView.updateListener.of((update) => {

@@ -4,6 +4,7 @@
   import { appStatus } from "./appStatusStore.svelte.js";
   import { X } from "lucide-svelte";
   import Modal from "../Modal.svelte";
+  import Checkbox from "../Checkbox.svelte";
 
   let { tabs, activeTabId, leafId } = $props<{ tabs: Tab[], activeTabId: string | null, leafId: string }>();
 
@@ -83,10 +84,7 @@
     onCancel={() => { showSaveModal = false; pendingCloseTabId = null; }}
   >
     <div class="modal-extra">
-      <label>
-        <input type="checkbox" bind:checked={dontAskAgain} />
-        Don't ask again
-      </label>
+      <Checkbox bind:checked={dontAskAgain} label="Don't ask again" />
     </div>
   </Modal>
 
