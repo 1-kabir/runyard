@@ -5,6 +5,7 @@
   import { setupEditor } from "@runyard/editor";
   import { appStatus } from "./appStatusStore.svelte.js";
   import { TriangleAlert } from "lucide-svelte";
+  import Modal from "../Modal.svelte";
 
   let { filePath, onDirtyChange } = $props<{ 
     filePath: string, 
@@ -16,6 +17,8 @@
   let savedContent = $state("");
   let currentContent = $state("");
   let loadError = $state<string | null>(null);
+  let showWarningModal = $state(false);
+  let warningMessage = $state("");
 
   let isDirty = $derived(savedContent !== currentContent);
 
@@ -40,7 +43,8 @@
     } catch (e) {
       console.error("[EditorPanel] Failed to read file", filePath, e);
       if (!silent) {
-        loadError = `${e}`;
+        warningMessage = `${e}`;
+        showWarningModal = true;
       }
     }
   }
@@ -93,6 +97,21 @@
 </script>
 
 <div class="editor-wrapper">
+  <Modal 
+    bind:show={showWarningModal}
+    title="Warning"
+    message={"Failed to read file correctly. It might be binary or have an invalid encoding.\n\n" + warningMessage}
+    confirmLabel="Open Anyway"
+    onConfirm={() => {
+        showWarningModal = false;
+        loadError = null; 
+    }}
+    onCancel={() => {
+        showWarningModal = false;
+        loadError = warningMessage;
+    }}
+  />
+
   {#if loadError}
     <div class="error-overlay">
       <div class="error-icon"><TriangleAlert size={48} strokeWidth={1.5} /></div>
