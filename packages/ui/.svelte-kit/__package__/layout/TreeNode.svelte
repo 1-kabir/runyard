@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import type { FsEntry } from "@runyard/common";
   import TreeNode from "./TreeNode.svelte";
+  import { File, Folder, FolderOpen } from "lucide-svelte";
 
   let { node, onOpenFile, depth = 0 } = $props<{ 
     node: FsEntry, 
@@ -12,9 +13,6 @@
   let expanded = $state(false);
   let children = $state<FsEntry[]>([]);
   let loading = $state(false);
-
-  // Derive an icon based on kind
-  let icon = $derived(node.kind === "dir" ? (expanded ? "📂" : "📁") : "📄");
 
   export async function refresh() {
     if (node.kind === "dir" && expanded) {
@@ -49,7 +47,17 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="row" onclick={toggle}>
-    <span class="icon">{icon}</span>
+    <span class="icon">
+      {#if node.kind === "dir"}
+        {#if expanded}
+          <FolderOpen size={16} strokeWidth={1.5} />
+        {:else}
+          <Folder size={16} strokeWidth={1.5} />
+        {/if}
+      {:else}
+        <File size={16} strokeWidth={1.5} />
+      {/if}
+    </span>
     <span class="name">{node.name}</span>
   </div>
   
@@ -67,9 +75,9 @@
     display: flex;
     flex-direction: column;
     user-select: none;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: inherit;
     font-size: 13px;
-    color: #cccccc;
+    color: var(--text-secondary);
   }
   .row {
     display: flex;
@@ -80,15 +88,16 @@
   }
   .row:hover {
     background-color: var(--bg-secondary);
+    color: var(--text);
   }
   .icon {
     margin-right: 8px;
-    font-size: 16px;
     width: 16px;
-    text-align: center;
+    height: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0.8;
   }
   .name {
     white-space: nowrap;

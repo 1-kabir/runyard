@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
   import { appStatus } from "./appStatusStore.svelte.js";
+  import { GitBranch } from "lucide-svelte";
 
   // Independently reactive fields
   let fileEncoding = $state<string>("UTF-8");
@@ -32,7 +33,7 @@
   <div class="left">
     <div class="item connection">{connectionState}</div>
     <div class="item git">
-        <span class="icon"></span>
+        <span class="icon"><GitBranch size={12} strokeWidth={2} /></span>
         {appStatus.gitBranch}
     </div>
     <div class="item path">{truncatePath(appStatus.activeFilePath)}</div>

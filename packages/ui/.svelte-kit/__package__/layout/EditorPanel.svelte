@@ -94,7 +94,7 @@
 <div class="editor-wrapper">
   {#if loadError}
     <div class="error-overlay">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon"><TriangleAlert size={48} strokeWidth={1.5} /></div>
       <div class="error-title">Failed to load file</div>
       <div class="error-msg">{loadError}</div>
       <div class="error-path">{filePath}</div>
@@ -186,4 +186,4 @@
   :global(.cm-scroller::-webkit-scrollbar-thumb:hover) {
     background: rgba(128,128,128,0.3);
   }
-</style>
+  </style>
