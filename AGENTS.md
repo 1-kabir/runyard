@@ -1,87 +1,54 @@
 # Runyard | Agent Operating Procedures
 
-This document outlines the mandatory rules, constraints, and methodologies for AI agents working on **Runyard**—a performance-first, agentic IDE for human and AI collaboration.
+Performance-first, agentic IDE for human-AI collaboration.
 
 ---
 
-## 🏗️ Project Context
-- **Product**: Runyard (Agentic IDE)
-- **Stack**: 
-  - **Core**: Rust (Tauri)
-  - **Frontend**: SvelteKit, TypeScript, TailwindCSS
-  - **Environment**: Monorepo managed via `pnpm` and `turbo`
-  - **Philosophy**: Performance-first. Minimal overhead. Seamless human-AI synergy.
+## 🏗️ Project Structure
+Runyard is a monorepo managed by `pnpm` and `turbo`.
+- `apps/desktop`: Tauri v2 + Svelte 5 desktop application.
+- `apps/mobile`: Tauri Mobile (shared core/UI).
+- `apps/web`: Svelte 5 frontend served by sub-service.
+- `crates/runyard-core`: Core Rust logic (FS, Git, Commands).
+- `packages/ui`: Shared Svelte 5 component library (Runes).
+- `packages/editor`: CodeMirror 6 configuration and wrapper.
+- `packages/common`: Shared TypeScript types and utilities.
+- `packages/protocol`: ACP/MCP/AgentCP protocol implementations.
 
 ---
 
-GENERAL RULES:
-- Use Svelte 5 Runes ($state, $derived, $effect) throughout. No legacy Svelte 4 syntax.
-- No inline styles — CSS custom properties and scoped component styles only.
-- Every component file should have a clear single responsibility.
-- Use brave-search to verify latest stable versions of all CodeMirror 6 packages, @tauri-apps/api v2, and any other dependencies before writing package.json files.
-- TypeScript strict mode everywhere.
-- Do not add any dependencies that are not directly needed for this milestone.
+## 🛠️ The Stack
+- **Shell**: Tauri v2 (Rust)
+- **Frontend**: Svelte 5 (Runes), TypeScript (Strict), TailwindCSS
+- **Editor**: CodeMirror 6
+- **Communication**: JSON-RPC over WebSocket (Sub-service) / IPC (Local)
+
 ---
 
 ## 📜 The Prime Directives
-1. **Always Ask. Never Assume.** Stop and confirm before destructive, ambiguous, or large-scope actions.
-2. **Never Do More Than Asked.** Fix the specific issue. Mention others, but don't dive in without approval.
-3. **Finish What You Start.** No `// TODO`, `// FIXME`, or empty function bodies.
-4. **Understand Before Acting.** Read existing schemas and patterns. No new libraries without a strong reason.
+1. **Always Ask. Never Assume.** Confirm before destructive or ambiguous actions.
+2. **Understand Before Acting.** Read existing code and schemas. No new libraries without approval.
+3. **Finish What You Start.** No `TODO`, `FIXME`, or `...` placeholders.
+4. **Performance is a Feature.** Every change must be evaluated for latency and memory impact.
 
 ---
 
-## 🛠️ Methods of Working
-
-### 1. Research & Discovery
-- **Check Knowledge Items (KIs)**: Before any research, check `<appDataDir>\knowledge` for existing patterns.
-- **Search First**: Use search tools for unfamiliar APIs or persistent bugs. Never assume something "doesn't exist" without searching.
-- **Context Awareness**: Read the `pnpm-workspace.yaml` and `turbo.json` to understand how packages interact.
-
-### 2. Code Standards
-- **Rust (Backend)**:
-  - Prioritize performance and safety.
-  - Follow idiomatic Rust patterns (Clippy is your friend).
-  - Explicit error handling; no `unwrap()` or `expect()` in production paths.
-- **TypeScript (Frontend)**:
-  - **Strict Type Safety**: No `any`. Use `unknown` and narrow explicitly.
-  - **Zod**: Mandatory for validating external data (API responses, IPC messages).
-  - **Tailwind**: Utility-first styling only. No inline styles or hardcoded hex codes.
-- **Architecture**:
-  - One responsibility per function.
-  - No business logic in UI components; keep it in stores or separate logic modules.
-
-### 3. Tool Usage
-- **GitHub**: Use `gh` CLI for all operations (PRs, issues, etc.).
-- **Terminal**: Never kill all Node processes. Run servers only when needed and kill them after use.
+## 💎 Best Practices & Patterns
+- **Svelte 5**: Use `$state`, `$derived`, `$effect` exclusively. No legacy syntax.
+- **Component Design**: Single responsibility. UI only; logic belongs in stores or modules.
+- **State Management**: Use `$state` in `.svelte.ts` files for global/shared state.
+- **Strict Types**: No `any`. Use `Zod` for all boundary validation (IPC, API).
+- **Error Handling**: Explicit, informative errors. No swallowed exceptions. In Rust, no `unwrap()` in production.
+- **Styling**: Tailwind utility-first. No inline styles. Use CSS variables for themes.
+- **Performance**: Minimize IPC roundtrips. Optimize Svelte reactivity (avoid over-triggering effects).
 
 ---
 
-## ⚠️ Safety & Destructive Operations
-
-### Git First
-- Always run `git status` before reorganization. If there's uncommitted work, inform the user.
-
-### Copy → Verify → Delete
-1. Copy files to the new location.
-2. Verify the copy succeeded.
-3. Ask before deleting the originals.
-
-### Hard Constraints
-- **`.env` Files**: NEVER use `write_file` or destructive commands. Use surgical `replace` to preserve keys.
-- **`rm -rf`**: Requires explicit user confirmation with a list of exactly what will be deleted.
-- **Process Management**: Never close stray Node processes blindly; you might kill yourself.
-
----
-
-## 🚀 Performance-First Philosophy
-Runyard is an IDE. It must be fast.
-- Avoid heavy runtime dependencies.
-- Minimize IPC overhead between Rust and Svelte.
-- Use Svelte's reactivity efficiently; avoid unnecessary re-renders.
-- In Rust, be mindful of memory allocation and thread safety.
-
----
+## ⚠️ Workflow & Safety
+- **Git**: Always `git status` before big moves. PUSH to GitHub after every logical change.
+- **Surgical Edits**: Prefer `replace` over `write_file` for large files.
+- **Destructive Ops**: `rm -rf` and `.env` edits require explicit user confirmation.
+- **Process Management**: Never kill all Node processes (you'll kill the agent).
 
 > [!IMPORTANT]
-> You are building a tool for *other* agents and developers. Your code is the blueprint. Make it exemplary.
+> You are building a tool for agents. Your code is the blueprint. Make it exemplary.
