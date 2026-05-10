@@ -28,8 +28,7 @@ export function setupEditor(options: EditorOptions) {
       indentWithTab
     ]),
     EditorView.updateListener.of((update) => {
-...
-
+      if (update.docChanged && options.onChange) {
         options.onChange(update.state.doc.toString());
       }
       if (update.selectionSet && options.onSelectionChange) {

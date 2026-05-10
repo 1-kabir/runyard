@@ -2,6 +2,8 @@
 
 Performance-first, agentic IDE for human-AI collaboration.
 
+Runyard is envisioned as the powerful successor to VS Code, Cursor, and Windsurf, combining their agentic capabilities with phenomenal performance that surpasses Zed and other performance-focused editors.
+
 ---
 
 ## 🏗️ Project Structure
@@ -29,7 +31,7 @@ Runyard is a monorepo managed by `pnpm` and `turbo`.
 1. **Always Ask. Never Assume.** Confirm before destructive or ambiguous actions.
 2. **Understand Before Acting.** Read existing code and schemas. No new libraries without approval.
 3. **Finish What You Start.** No `TODO`, `FIXME`, or `...` placeholders.
-4. **Performance is a Feature.** Every change must be evaluated for latency and memory impact.
+4. **Performance is a Feature.** Every change must be evaluated for latency and memory impact. Aim for phenomenal performance.
 
 ---
 
@@ -40,13 +42,13 @@ Runyard is a monorepo managed by `pnpm` and `turbo`.
 - **Strict Types**: No `any`. Use `Zod` for all boundary validation (IPC, API).
 - **Error Handling**: Explicit, informative errors. No swallowed exceptions. In Rust, no `unwrap()` in production.
 - **Styling**: Tailwind utility-first. No inline styles. Use CSS variables for themes.
-- **Performance**: Minimize IPC roundtrips. Optimize Svelte reactivity (avoid over-triggering effects).
+- **Performance**: Minimize IPC roundtrips. Optimize Svelte reactivity.
 
 ---
 
 ## ⚠️ Workflow & Safety
 - **Git**: Always `git status` before big moves. PUSH to GitHub after every logical change.
-- **Surgical Edits**: Prefer `replace` over `write_file` for large files.
+- **Surgical Edits**: Prefer `replace` over `write_file` for large files. **Never** leave `...` placeholders in code.
 - **Destructive Ops**: `rm -rf` and `.env` edits require explicit user confirmation.
 - **Process Management**: Never kill all Node processes (you'll kill the agent).
 
