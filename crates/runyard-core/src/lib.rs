@@ -45,7 +45,17 @@ pub mod commands {
 
     #[tauri::command]
     pub fn fs_read(path: String) -> Result<String, String> {
-        fs::read_to_string(path).map_err(|e| e.to_string())
+        println!("[Core] Reading file: {}", path);
+        match fs::read_to_string(&path) {
+            Ok(content) => {
+                println!("[Core] Successfully read {} bytes", content.len());
+                Ok(content)
+            },
+            Err(e) => {
+                eprintln!("[Core] Failed to read file {}: {}", path, e);
+                Err(e.to_string())
+            }
+        }
     }
 
     #[tauri::command]
