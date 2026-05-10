@@ -54,14 +54,19 @@ class LayoutStore {
         return null;
     }
     addTab(leafId, tab) {
+        console.log(`[layoutStore] addTab: adding ${tab.title} (${tab.type}) to leaf ${leafId}`);
         const leaf = this.findNode(this.layout.root, leafId);
         if (leaf && leaf.type === "leaf") {
             leaf.tabs.push(tab);
             leaf.activeTabId = tab.id;
             this.save();
         }
+        else {
+            console.warn(`[layoutStore] addTab: could not find leaf ${leafId}`);
+        }
     }
     closeTab(tabId) {
+        console.log(`[layoutStore] closeTab: closing ${tabId}`);
         const removeTabFromNode = (node) => {
             if (node.type === "leaf") {
                 const idx = node.tabs.findIndex(t => t.id === tabId);

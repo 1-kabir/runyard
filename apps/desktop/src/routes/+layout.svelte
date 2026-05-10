@@ -1,5 +1,6 @@
 <script lang="ts">
   import { StatusBar, theme } from "@runyard/ui";
+  import "@fontsource/inter";
   import "@runyard/ui/global.css";
   
   let { children } = $props();

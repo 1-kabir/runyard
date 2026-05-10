@@ -8,12 +8,23 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [sveltekit()],
 
-  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-  //
-  // 1. prevent Vite from obscuring rust errors
-  clearScreen: false,
-  // 2. tauri expects a fixed port, fail if that port is not available
+  // Vite options tailored for Tauri development
+  optimizeDeps: {
+    include: [
+      "@codemirror/state",
+      "@codemirror/view",
+      "@codemirror/basic-setup",
+      "@codemirror/lang-javascript",
+      "@codemirror/lang-python",
+      "@codemirror/theme-one-dark",
+      "@fontsource/inter"
+    ]
+  },
+
   server: {
+    fs: {
+      allow: ["../../"] // Allow workspace root
+    },
     port: 1420,
     strictPort: true,
     host: host || false,

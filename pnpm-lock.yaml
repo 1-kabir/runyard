@@ -23,6 +23,27 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@codemirror/basic-setup':
+        specifier: ^0.20.0
+        version: 0.20.0
+      '@codemirror/lang-javascript':
+        specifier: ^6.2.5
+        version: 6.2.5
+      '@codemirror/lang-python':
+        specifier: ^6.2.1
+        version: 6.2.1
+      '@codemirror/state':
+        specifier: ^6.6.0
+        version: 6.6.0
+      '@codemirror/theme-one-dark':
+        specifier: ^6.1.3
+        version: 6.1.3
+      '@codemirror/view':
+        specifier: ^6.42.1
+        version: 6.42.1
+      '@fontsource/inter':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@runyard/common':
         specifier: workspace:^
         version: link:../../packages/common
