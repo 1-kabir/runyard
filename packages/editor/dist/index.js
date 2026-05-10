@@ -13,6 +13,11 @@ export function setupEditor(options) {
             if (update.docChanged && options.onChange) {
                 options.onChange(update.state.doc.toString());
             }
+            if (update.selectionSet && options.onSelectionChange) {
+                const pos = update.state.selection.main.head;
+                const line = update.state.doc.lineAt(pos);
+                options.onSelectionChange(line.number, pos - line.from + 1);
+            }
         }),
     ];
     // Language auto-detection

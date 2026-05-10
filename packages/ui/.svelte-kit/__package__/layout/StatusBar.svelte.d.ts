@@ -1,6 +1,3 @@
-declare const StatusBar: import("svelte").Component<Record<string, never>, {
-    updateActiveFile: (path: string) => void;
-    updateCursor: (line: number, col: number) => void;
-}, "">;
+declare const StatusBar: import("svelte").Component<Record<string, never>, {}, "">;
 type StatusBar = ReturnType<typeof StatusBar>;
 export default StatusBar;

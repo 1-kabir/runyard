@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import { listen } from "@tauri-apps/api/event";
   import { setupEditor } from "@runyard/editor";
+  import { appStatus } from "./appStatusStore.svelte.js";
 
   let { filePath, onDirtyChange } = $props<{ 
     filePath: string, 
@@ -19,13 +21,15 @@
     onDirtyChange(isDirty);
   });
 
-  async function loadFile() {
+  async function loadFile(silent = false) {
     try {
       const content = await invoke<string>("fs_read", { path: filePath });
       savedContent = content;
-      currentContent = content;
-      if (editorInstance) {
-        editorInstance.setValue(content);
+      if (!silent) {
+          currentContent = content;
+          if (editorInstance) {
+            editorInstance.setValue(content);
+          }
       }
     } catch (e) {
       console.error("Failed to read file", e);
@@ -52,16 +56,29 @@
       },
       onSave: (content) => {
         saveFile(content);
+      },
+      onSelectionChange: (line, col) => {
+        appStatus.updateCursor(line, col);
       }
     });
 
     loadFile();
-  });
+    appStatus.updateActiveFile(filePath);
 
-  onDestroy(() => {
-    if (editorInstance) {
-      editorInstance.destroy();
-    }
+    // External change listener
+    const unlisten = listen<string>("fs:changed", (event) => {
+      if (event.payload === filePath && !isDirty) {
+        console.log(`[Editor] External change detected for ${filePath}, refreshing...`);
+        loadFile();
+      }
+    });
+
+    return () => {
+      if (editorInstance) editorInstance.destroy();
+      appStatus.updateActiveFile(null);
+      appStatus.updateCursor(1, 1);
+      unlisten.then(f => f());
+    };
   });
 </script>
 

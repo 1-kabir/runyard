@@ -11,6 +11,7 @@ export interface EditorOptions {
   filePath: string;
   onChange?: (content: string) => void;
   onSave?: (content: string) => void;
+  onSelectionChange?: (line: number, col: number) => void;
 }
 
 export function setupEditor(options: EditorOptions) {
@@ -22,6 +23,11 @@ export function setupEditor(options: EditorOptions) {
     EditorView.updateListener.of((update) => {
       if (update.docChanged && options.onChange) {
         options.onChange(update.state.doc.toString());
+      }
+      if (update.selectionSet && options.onSelectionChange) {
+        const pos = update.state.selection.main.head;
+        const line = update.state.doc.lineAt(pos);
+        options.onSelectionChange(line.number, pos - line.from + 1);
       }
     }),
   ];

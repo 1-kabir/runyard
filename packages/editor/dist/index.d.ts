@@ -5,6 +5,7 @@ export interface EditorOptions {
     filePath: string;
     onChange?: (content: string) => void;
     onSave?: (content: string) => void;
+    onSelectionChange?: (line: number, col: number) => void;
 }
 export declare function setupEditor(options: EditorOptions): {
     view: EditorView;
