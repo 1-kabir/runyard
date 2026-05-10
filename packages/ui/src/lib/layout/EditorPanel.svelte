@@ -21,6 +21,9 @@
   let showWarningModal = $state(false);
   let showExternalChangeModal = $state(false);
   let warningMessage = $state("");
+  
+  // Flag to ignore fs:changed events triggered by our own writes
+  let ignoringNextChange = false;
 
   let isDirty = $derived(savedContent !== currentContent && savedContent !== "");
 
@@ -60,10 +63,14 @@
   async function saveFile(content: string) {
     if (loadError) return;
     try {
+      ignoringNextChange = true;
       await invoke("fs_write", { path: filePath, contents: content });
       savedContent = content;
       currentContent = content;
+      // Small timeout to ensure the fs event is processed and ignored
+      setTimeout(() => { ignoringNextChange = false; }, 100);
     } catch (e) {
+      ignoringNextChange = false;
       console.error("Failed to write file", e);
     }
   }
@@ -98,6 +105,11 @@
     // External change listener
     const unlisten = listen<string>("fs:changed", (event) => {
       if (event.payload === filePath) {
+        if (ignoringNextChange) {
+          console.log(`[Editor] Ignoring change event for ${filePath} (triggered by our own write)`);
+          return;
+        }
+
         if (!isDirty) {
           console.log(`[Editor] External change detected for ${filePath}, refreshing...`);
           loadFile();
