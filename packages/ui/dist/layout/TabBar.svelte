@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Tab } from "@runyard/common";
   import { layoutEngine } from "./layoutStore.svelte.js";
+  import { X } from "lucide-svelte";
 
   let { tabs, activeTabId, leafId } = $props<{ tabs: Tab[], activeTabId: string | null, leafId: string }>();
 
