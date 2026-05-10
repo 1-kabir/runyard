@@ -29,5 +29,5 @@
 <style>
   .tab-group { display: flex; flex-direction: column; width: 100%; height: 100%; background: #1e1e1e; color: #ccc; overflow: hidden; }
   .content-container { flex: 1; overflow: auto; }
-  .empty-state { display: flex; align-items: center; justify-content: center; flex: 1; color: #666; font-family: sans-serif; }
+  .empty-state { display: flex; align-items: center; justify-content: center; flex: 1; color: #666; font-family: inherit; }
 </style>

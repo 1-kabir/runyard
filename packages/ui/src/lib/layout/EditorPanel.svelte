@@ -154,7 +154,7 @@
   }
 
   .error-path {
-    font-family: monospace;
+    font-family: inherit;
     font-size: 12px;
     background: var(--bg-secondary);
     padding: 4px 8px;

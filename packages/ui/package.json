@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@fontsource-variable/google-sans-flex": "^5.2.3",
-    "@fontsource/inter": "^5.2.8",
     "@runyard/editor": "workspace:^",
     "@tauri-apps/api": "^2",
     "lucide-svelte": "^1.0.1"
