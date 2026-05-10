@@ -14,7 +14,9 @@
     <TabBar tabs={node.tabs} activeTabId={node.activeTabId} leafId={node.id} />
     <div class="content-container">
       {#if activeTab}
-        <TabContent tab={activeTab} />
+        {#key activeTab.id}
+          <TabContent tab={activeTab} />
+        {/key}
       {/if}
     </div>
   {:else}

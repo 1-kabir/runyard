@@ -90,13 +90,22 @@ pub mod commands {
 
     #[tauri::command]
     pub fn get_home_dir() -> Result<String, String> {
-        #[cfg(target_os = "windows")]
-        {
-            std::env::var("USERPROFILE").map_err(|e| e.to_string())
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            std::env::var("HOME").map_err(|e| e.to_string())
+        // Try standard environment variables
+        let path = if cfg!(target_os = "windows") {
+            std::env::var("USERPROFILE")
+                .or_else(|_| std::env::var("HOME"))
+                .map_err(|e| e.to_string())?
+        } else {
+            std::env::var("HOME")
+                .map_err(|e| e.to_string())?
+        };
+        
+        // Ensure it's a valid directory and absolute
+        let p = std::path::PathBuf::from(path);
+        if p.exists() && p.is_dir() {
+            Ok(p.to_string_lossy().to_string())
+        } else {
+            Err("Home directory not found or invalid".to_string())
         }
     }
 }
