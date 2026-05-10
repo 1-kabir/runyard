@@ -73,3 +73,10 @@
   border: 2px solid transparent;
   background-clip: padding-box;
 }
+
+/* Layout overrides */
+:global(.split-pane), :global(.tab-group) {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+}
