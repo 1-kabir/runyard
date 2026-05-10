@@ -69,8 +69,28 @@ class LayoutStore {
     }
   }
 
-  closeTab(tabId: string) {
-    console.log(`[layoutStore] closeTab: closing ${tabId}`);
+  closeTab(tabId: string, force = false): boolean {
+    console.log(`[layoutStore] closeTab: closing ${tabId} (force: ${force})`);
+    
+    // Check if dirty and not forced
+    const findTab = (node: LayoutNode): Tab | null => {
+      if (node.type === "leaf") {
+        return node.tabs.find(t => t.id === tabId) || null;
+      }
+      if (node.type === "split") {
+        for (const child of node.children) {
+          const found = findTab(child);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const tab = findTab(this.layout.root);
+    if (tab && tab.dirty && !force) {
+        return false;
+    }
+
     const removeTabFromNode = (node: LayoutNode): boolean => {
       if (node.type === "leaf") {
         const idx = node.tabs.findIndex(t => t.id === tabId);
@@ -94,6 +114,7 @@ class LayoutStore {
     if (removeTabFromNode(this.layout.root)) {
       this.save();
     }
+    return true;
   }
 
   setActiveTab(tabId: string) {

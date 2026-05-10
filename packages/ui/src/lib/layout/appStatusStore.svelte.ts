@@ -4,6 +4,7 @@ class AppStatusStore {
   gitBranch = $state<string>("detached");
   // Tracks files that were just opened from the explorer
   justOpenedFiles = $state<Set<string>>(new Set());
+  suppressSaveConfirmation = $state(false);
 
   updateActiveFile(path: string | null) {
     this.activeFilePath = path;

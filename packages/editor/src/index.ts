@@ -1,9 +1,11 @@
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { basicSetup } from "@codemirror/basic-setup";
+import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { history, historyKeymap } from "@codemirror/commands";
+import { indentWithTab } from "@codemirror/commands";
 
 export interface EditorOptions {
   parent: HTMLElement;
@@ -16,12 +18,18 @@ export interface EditorOptions {
 
 export function setupEditor(options: EditorOptions) {
   const ext = options.filePath.split('.').pop()?.toLowerCase();
-  
+
   const extensions: Extension[] = [
     basicSetup,
-    oneDark, // Dark theme as requested
+    oneDark,
+    history(),
+    keymap.of([
+      ...historyKeymap,
+      indentWithTab
+    ]),
     EditorView.updateListener.of((update) => {
-      if (update.docChanged && options.onChange) {
+...
+
         options.onChange(update.state.doc.toString());
       }
       if (update.selectionSet && options.onSelectionChange) {

@@ -1,11 +1,39 @@
 <script lang="ts">
   import type { Tab } from "@runyard/common";
   import { layoutEngine } from "./layoutStore.svelte.js";
+  import { appStatus } from "./appStatusStore.svelte.js";
   import { X } from "lucide-svelte";
+  import Modal from "../Modal.svelte";
 
   let { tabs, activeTabId, leafId } = $props<{ tabs: Tab[], activeTabId: string | null, leafId: string }>();
 
   let draggedTabId = $state<string | null>(null);
+
+  // Save confirmation state
+  let showSaveModal = $state(false);
+  let pendingCloseTabId = $state<string | null>(null);
+  let dontAskAgain = $state(false);
+
+  function handleClose(tabId: string) {
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab && tab.dirty && !appStatus.suppressSaveConfirmation) {
+      pendingCloseTabId = tabId;
+      showSaveModal = true;
+    } else {
+      layoutEngine.closeTab(tabId, true);
+    }
+  }
+
+  function confirmCloseWithoutSaving() {
+    if (dontAskAgain) {
+      appStatus.suppressSaveConfirmation = true;
+    }
+    if (pendingCloseTabId) {
+      layoutEngine.closeTab(pendingCloseTabId, true);
+    }
+    showSaveModal = false;
+    pendingCloseTabId = null;
+  }
 
   function onDragStart(e: DragEvent, tabId: string) {
     draggedTabId = tabId;
@@ -45,6 +73,23 @@
 </script>
 
 <div class="tab-bar">
+  <Modal
+    bind:show={showSaveModal}
+    title="Unsaved Changes"
+    message="You have unsaved changes in this file. Are you sure you want to close it without saving?"
+    confirmLabel="Discard & Close"
+    cancelLabel="Cancel"
+    onConfirm={confirmCloseWithoutSaving}
+    onCancel={() => { showSaveModal = false; pendingCloseTabId = null; }}
+  >
+    <div class="modal-extra">
+      <label>
+        <input type="checkbox" bind:checked={dontAskAgain} />
+        Don't ask again
+      </label>
+    </div>
+  </Modal>
+
   {#each tabs as tab (tab.id)}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -63,7 +108,7 @@
       {#if tab.dirty}<span class="dirty-dot"></span>{/if}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="close-btn" onpointerdown={(e) => { e.stopPropagation(); layoutEngine.closeTab(tab.id); }}>
+      <div class="close-btn" onpointerdown={(e) => { e.stopPropagation(); handleClose(tab.id); }}>
         <X size={14} strokeWidth={2} />
       </div>
     </div>
@@ -81,4 +126,19 @@
   .tab:hover .close-btn, .tab.active .close-btn { opacity: 0.6; }
   .close-btn:hover { background: rgba(128,128,128,0.2); opacity: 1 !important; }
   .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; pointer-events: none; }
+
+  .modal-extra {
+    margin-top: 16px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+  }
+  .modal-extra label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
 </style>

@@ -21,7 +21,7 @@
   let showWarningModal = $state(false);
   let warningMessage = $state("");
 
-  let isDirty = $derived(savedContent !== currentContent);
+  let isDirty = $derived(savedContent !== currentContent && savedContent !== "");
 
   $effect(() => {
     onDirtyChange(isDirty);
@@ -34,12 +34,14 @@
       const content = await invoke<string>("fs_read", { path: filePath });
       console.log(`[EditorPanel] Successfully loaded content of size: ${content.length}`);
       
-      savedContent = content;
       if (!silent) {
           currentContent = content;
+          savedContent = content;
           if (editorInstance) {
             editorInstance.setValue(content);
           }
+      } else {
+        savedContent = content;
       }
     } catch (e) {
       console.error("[EditorPanel] Failed to read file", filePath, e);
@@ -66,6 +68,14 @@
   }
 
   onMount(() => {
+    const handleBlur = () => {
+      if (isDirty) {
+        console.log(`[EditorPanel] Auto-saving ${filePath} on window blur`);
+        saveFile(currentContent);
+      }
+    };
+    window.addEventListener("blur", handleBlur);
+
     editorInstance = setupEditor({
       parent: container,
       doc: currentContent,
@@ -93,6 +103,7 @@
     });
 
     return () => {
+      window.removeEventListener("blur", handleBlur);
       if (editorInstance) editorInstance.destroy();
       appStatus.updateActiveFile(null);
       appStatus.updateCursor(1, 1);

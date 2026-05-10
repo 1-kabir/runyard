@@ -1,12 +1,13 @@
 <script lang="ts">
-  let { title, message, onConfirm, onCancel, confirmLabel = "OK", cancelLabel = "Cancel", show = $bindable(false) } = $props<{
+  let { title, message, onConfirm, onCancel, confirmLabel = "OK", cancelLabel = "Cancel", show = $bindable(false), children } = $props<{
     title: string,
     message: string,
     onConfirm: () => void,
     onCancel?: () => void,
     confirmLabel?: string,
     cancelLabel?: string,
-    show: boolean
+    show: boolean,
+    children?: import("svelte").Snippet
   }>();
 
   function handleConfirm() {
@@ -21,7 +22,13 @@
 </script>
 
 {#if show}
-  <div class="modal-backdrop" onclick={handleCancel}>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <div 
+    class="modal-backdrop" 
+    onclick={handleCancel}
+    role="button"
+    tabindex="-1"
+  >
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="modal-content" onclick={(e) => e.stopPropagation()}>
@@ -30,6 +37,9 @@
       </div>
       <div class="modal-body">
         <p>{message}</p>
+        {#if children}
+          {@render children()}
+        {/if}
       </div>
       <div class="modal-footer">
         {#if onCancel}
