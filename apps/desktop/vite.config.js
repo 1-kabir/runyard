@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
+import path from "path";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -10,6 +11,12 @@ export default defineConfig(async () => ({
 
   // Vite options tailored for Tauri development
   resolve: {
+    alias: {
+      "@runyard/ui": path.resolve(__dirname, "../../packages/ui/src/lib"),
+      "@runyard/editor": path.resolve(__dirname, "../../packages/editor/src"),
+      "@runyard/protocol": path.resolve(__dirname, "../../packages/protocol/src"),
+      "@runyard/common": path.resolve(__dirname, "../../packages/common/src")
+    },
     dedupe: [
       "@codemirror/state",
       "@codemirror/view",
