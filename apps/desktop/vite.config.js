@@ -9,6 +9,20 @@ export default defineConfig(async () => ({
   plugins: [sveltekit()],
 
   // Vite options tailored for Tauri development
+  resolve: {
+    dedupe: [
+      "@codemirror/state",
+      "@codemirror/view",
+      "@codemirror/basic-setup",
+      "@codemirror/lang-javascript",
+      "@codemirror/lang-python",
+      "@codemirror/theme-one-dark",
+      "@codemirror/language",
+      "@codemirror/commands",
+      "@codemirror/search",
+      "@codemirror/autocomplete"
+    ]
+  },
   optimizeDeps: {
     include: [
       "@codemirror/state",
@@ -17,6 +31,10 @@ export default defineConfig(async () => ({
       "@codemirror/lang-javascript",
       "@codemirror/lang-python",
       "@codemirror/theme-one-dark",
+      "@codemirror/language",
+      "@codemirror/commands",
+      "@codemirror/search",
+      "@codemirror/autocomplete",
       "@fontsource/inter"
     ]
   },

@@ -18,7 +18,7 @@
   }
 
   function onPointerMove(e: PointerEvent) {
-    if (!isDragging || activeResizerIndex === -1) return;
+    if (!isDragging || activeResizerIndex === -1 || !container) return;
 
     const rect = container.getBoundingClientRect();
     const totalSize = node.direction === "horizontal" ? rect.width : rect.height;

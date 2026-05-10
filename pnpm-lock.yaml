@@ -23,15 +23,27 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@codemirror/autocomplete':
+        specifier: ^6.20.2
+        version: 6.20.2
       '@codemirror/basic-setup':
         specifier: ^0.20.0
         version: 0.20.0
+      '@codemirror/commands':
+        specifier: ^6.10.3
+        version: 6.10.3
       '@codemirror/lang-javascript':
         specifier: ^6.2.5
         version: 6.2.5
       '@codemirror/lang-python':
         specifier: ^6.2.1
         version: 6.2.1
+      '@codemirror/language':
+        specifier: ^6.12.3
+        version: 6.12.3
+      '@codemirror/search':
+        specifier: ^6.7.0
+        version: 6.7.0
       '@codemirror/state':
         specifier: ^6.6.0
         version: 6.6.0
@@ -156,6 +168,9 @@ packages:
   '@codemirror/commands@0.20.0':
     resolution: {integrity: sha512-v9L5NNVA+A9R6zaFvaTbxs30kc69F6BkOoiEbeFw4m4I0exmDEKBILN6mK+GksJtvTzGBxvhAPlVFTdQW8GB7Q==}
 
+  '@codemirror/commands@6.10.3':
+    resolution: {integrity: sha512-JFRiqhKu+bvSkDLI+rUhJwSxQxYb759W5GBezE8Uc8mHLqC9aV/9aTC7yJSqCtB3F00pylrLCwnyS91Ap5ej4Q==}
+
   '@codemirror/lang-javascript@6.2.5':
     resolution: {integrity: sha512-zD4e5mS+50htS7F+TYjBPsiIFGanfVqg4HyUz6WNFikgOPf2BgKlx+TQedI1w6n/IqRBVBbBWmGFdLB/7uxO4A==}
 
@@ -176,6 +191,9 @@ packages:
 
   '@codemirror/search@0.20.1':
     resolution: {integrity: sha512-ROe6gRboQU5E4z6GAkNa2kxhXqsGNbeLEisbvzbOeB7nuDYXUZ70vGIgmqPu0tB+1M3F9yWk6W8k2vrFpJaD4Q==}
+
+  '@codemirror/search@6.7.0':
+    resolution: {integrity: sha512-ZvGm99wc/s2cITtMT15LFdn8aH/aS+V+DqyGq/N5ZlV5vWtH+nILvC2nw0zX7ByNoHHDZ2IxxdW38O0tc5nVHg==}
 
   '@codemirror/state@0.20.1':
     resolution: {integrity: sha512-ms0tlV5A02OK0pFvTtSUGMLkoarzh1F8mr6jy1cD7ucSC2X/VLHtQCxfhdSEGqTYlQF2hoZtmLv+amqhdgbwjQ==}
@@ -990,6 +1008,13 @@ snapshots:
       '@codemirror/view': 0.20.7
       '@lezer/common': 0.16.1
 
+  '@codemirror/commands@6.10.3':
+    dependencies:
+      '@codemirror/language': 6.12.3
+      '@codemirror/state': 6.6.0
+      '@codemirror/view': 6.42.1
+      '@lezer/common': 1.5.2
+
   '@codemirror/lang-javascript@6.2.5':
     dependencies:
       '@codemirror/autocomplete': 6.20.2
@@ -1042,6 +1067,12 @@ snapshots:
     dependencies:
       '@codemirror/state': 0.20.1
       '@codemirror/view': 0.20.7
+      crelt: 1.0.6
+
+  '@codemirror/search@6.7.0':
+    dependencies:
+      '@codemirror/state': 6.6.0
+      '@codemirror/view': 6.42.1
       crelt: 1.0.6
 
   '@codemirror/state@0.20.1': {}
