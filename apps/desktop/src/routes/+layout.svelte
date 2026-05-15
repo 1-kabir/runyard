@@ -1,9 +1,18 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { StatusBar, theme } from "@runyard/ui";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
   import "@fontsource-variable/google-sans-flex";
   import "@runyard/ui/global.css";
   
   let { children } = $props();
+
+  onMount(() => {
+    // Show window after mount to prevent white flash
+    setTimeout(() => {
+        getCurrentWindow().show();
+    }, 100);
+  });
 </script>
 
 <svelte:head>
