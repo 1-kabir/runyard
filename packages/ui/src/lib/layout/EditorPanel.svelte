@@ -35,7 +35,10 @@
     try {
       loadError = null;
       console.log(`[EditorPanel] Loading file: ${filePath}`);
-      const content = await invoke<string>("fs_read", { path: filePath });
+      const rawContent = await invoke<string>("fs_read", { path: filePath });
+      // Normalize line endings to LF to avoid mismatch with CodeMirror's internal state
+      const content = rawContent.replace(/\r\n/g, "\n");
+      
       console.log(`[EditorPanel] Successfully loaded content of size: ${content.length}`);
       
       if (!silent) {
