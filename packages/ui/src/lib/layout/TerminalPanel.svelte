@@ -4,6 +4,7 @@
   import { listen } from "@tauri-apps/api/event";
   import type { UnlistenFn } from "@tauri-apps/api/event";
   import { settingsStore } from "./settingsStore.svelte.js";
+  import { layoutEngine } from "./layoutStore.svelte.js";
   import type { TerminalSessionInfo } from "@runyard/common";
 
   let {
@@ -34,18 +35,20 @@
     const { Terminal } = await import("@xterm/xterm");
     const { FitAddon } = await import("@xterm/addon-fit");
 
-    const fontFamily = settingsStore.settings.terminal.font_size
-      ? undefined
-      : "JetBrains Mono, ui-monospace, monospace";
     const fontSize = settingsStore.settings.terminal.font_size || 13;
     const scrollback = settingsStore.settings.terminal.scrollback_limit || 5000;
+    // Use font family from settings if set, otherwise fall back to default mono stack
+    const settingsFontFamily = settingsStore.settings.appearance?.font_family;
+    const fontFamily = settingsFontFamily && settingsFontFamily !== "JetBrains Mono"
+      ? settingsFontFamily
+      : "JetBrains Mono, ui-monospace, Menlo, monospace";
 
     // Reuse cached instance if available (tab switch)
     let inst = INSTANCE_CACHE.get(terminalId);
     if (!inst) {
       const term = new Terminal({
         cursorBlink: true,
-        fontFamily: "JetBrains Mono, ui-monospace, Menlo, monospace",
+        fontFamily,
         fontSize,
         scrollback,
         theme: {
@@ -86,6 +89,14 @@
     terminal.open(container);
     fitAddon.fit();
     isLoading = false;
+
+    // Update the tab title when the shell reports its current process via OSC sequences
+    // (e.g. zsh/bash with "precmd" hooks emit \e]0;title\a — xterm.js parses these natively)
+    terminal.onTitleChange((title: string) => {
+      if (title && title.trim()) {
+        layoutEngine.setTabTitle(`terminal:${terminalId}`, title.trim());
+      }
+    });
 
     // Handle user input → write to PTY
     terminal.onData((data: string) => {

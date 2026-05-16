@@ -37,7 +37,7 @@
   }
 
   function handleClose(tabId: string) {
-    const tab = tabs.find(t => t.id === tabId);
+    const tab = tabs.find((t: Tab) => t.id === tabId);
     if (tab && tab.dirty && !appStatus.suppressSaveConfirmation) {
       pendingCloseTabId = tabId;
       showSaveModal = true;
@@ -52,7 +52,7 @@
       appStatus.suppressSaveConfirmation = true;
     }
     if (pendingCloseTabId) {
-      const tab = tabs.find(t => t.id === pendingCloseTabId);
+      const tab = tabs.find((t: Tab) => t.id === pendingCloseTabId);
       if (tab) cleanupTerminalTab(tab);
       layoutEngine.closeTab(pendingCloseTabId, true);
     }
@@ -80,8 +80,8 @@
     const sourceId = e.dataTransfer?.getData("text/plain");
     if (!sourceId || sourceId === targetTabId) return;
 
-    const sourceIdx = tabs.findIndex(t => t.id === sourceId);
-    const targetIdx = tabs.findIndex(t => t.id === targetTabId);
+    const sourceIdx = tabs.findIndex((t: Tab) => t.id === sourceId);
+    const targetIdx = tabs.findIndex((t: Tab) => t.id === targetTabId);
 
     if (sourceIdx !== -1 && targetIdx !== -1) {
       const newTabs = [...tabs];

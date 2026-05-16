@@ -28,6 +28,11 @@
   // Flag to ignore fs:changed events triggered by our own writes
   let ignoringNextChange = false;
 
+  // Refs held so onDestroy can clean up after the async onMount
+  let _blurHandler: (() => void) | null = null;
+  let _saveCmdHandler: (() => void) | null = null;
+  let _unlistenFs: (() => void) | null = null;
+
   let isDirty = $derived(savedContent !== currentContent && savedContent !== "");
 
   $effect(() => {
@@ -139,13 +144,30 @@
     await lspStore.send(language, initMsg);
   }
 
+  onDestroy(() => {
+    if (_blurHandler) window.removeEventListener("blur", _blurHandler);
+    if (_saveCmdHandler) document.removeEventListener("runyard:save-current-file", _saveCmdHandler);
+    if (editorInstance) editorInstance.destroy();
+    appStatus.updateActiveFile(null);
+    appStatus.updateCursor(1, 1);
+    if (_unlistenFs) _unlistenFs();
+  });
+
   onMount(async () => {
-    const handleBlur = () => {
+    _blurHandler = () => {
       if (isDirty) {
         saveFile(currentContent);
       }
     };
-    window.addEventListener("blur", handleBlur);
+    window.addEventListener("blur", _blurHandler);
+
+    // Global save command — only act when this file is the active one
+    _saveCmdHandler = () => {
+      if (!loadError && appStatus.activeFilePath === filePath) {
+        saveFile(currentContent);
+      }
+    };
+    document.addEventListener("runyard:save-current-file", _saveCmdHandler);
 
     // Ensure LSP settings are loaded
     if (!settingsStore.loaded) {
@@ -188,6 +210,9 @@
       doc: currentContent,
       filePath,
       lspExtensions,
+      fontSize: settingsStore.settings.editor.font_size || 14,
+      tabSize: settingsStore.settings.editor.tab_size || 2,
+      lineWrap: settingsStore.settings.editor.line_wrap ?? false,
       onChange: (content) => {
         currentContent = content;
       },
@@ -202,8 +227,8 @@
     await loadFile();
     appStatus.updateActiveFile(filePath);
 
-    // External change listener
-    const unlisten = listen<string>("fs:changed", (event) => {
+    // External change listener — store unlisten fn for onDestroy
+    _unlistenFs = await listen<string>("fs:changed", (event) => {
       if (event.payload === filePath) {
         if (ignoringNextChange) return;
         if (!isDirty) {
@@ -213,14 +238,6 @@
         }
       }
     });
-
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      if (editorInstance) editorInstance.destroy();
-      appStatus.updateActiveFile(null);
-      appStatus.updateCursor(1, 1);
-      unlisten.then((f) => f());
-    };
   });
 </script>
 
@@ -332,7 +349,8 @@
   }
   :global(.cm-scroller) {
     font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
-    font-size: 14px;
+    /* --editor-font-size is set dynamically by setupEditor() from settings */
+    font-size: var(--editor-font-size, 14px);
   }
   :global(.cm-scroller::-webkit-scrollbar) {
     width: 10px;

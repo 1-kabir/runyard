@@ -1,3 +1,6 @@
+<script lang="ts">
+</script>
+
 <div class="welcome-panel">
   <div class="hero">
     <h1>Runyard</h1>

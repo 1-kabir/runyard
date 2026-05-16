@@ -1,5 +1,6 @@
 import type { Layout, LayoutNode, LeafNode, SplitNode, Tab, TerminalSessionInfo } from "@runyard/common";
 import { appStatus } from "./appStatusStore.svelte.js";
+import { settingsStore } from "./settingsStore.svelte.js";
 import { invoke } from "@tauri-apps/api/core";
 
 const DEFAULT_LAYOUT: Layout = {
@@ -13,6 +14,8 @@ const DEFAULT_LAYOUT: Layout = {
 
 class LayoutStore {
   layout = $state<Layout>(DEFAULT_LAYOUT);
+  /** LIFO stack of recently closed non-terminal tabs (max 10). */
+  closedTabHistory = $state<Tab[]>([]);
 
   constructor() {
     this.load();
@@ -113,9 +116,60 @@ class LayoutStore {
       return false;
     };
     if (removeTabFromNode(this.layout.root)) {
+      // Track non-terminal tabs so they can be reopened (terminal PTY sessions are dead after close)
+      if (tab && tab.type !== "terminal") {
+        this.closedTabHistory = [...this.closedTabHistory, { ...tab }].slice(-10);
+      }
       this.save();
     }
     return true;
+  }
+
+  /** Re-open the most recently closed non-terminal tab. */
+  reopenLastTab() {
+    if (this.closedTabHistory.length === 0) return;
+    const tab = this.closedTabHistory[this.closedTabHistory.length - 1];
+    this.closedTabHistory = this.closedTabHistory.slice(0, -1);
+
+    // If the tab is already open somewhere, just focus it
+    const alreadyOpen = (node: LayoutNode): boolean => {
+      if (node.type === "leaf") return node.tabs.some(t => t.id === tab.id);
+      if (node.type === "split") return node.children.some(c => alreadyOpen(c));
+      return false;
+    };
+
+    if (alreadyOpen(this.layout.root)) {
+      this.setActiveTab(tab.id);
+      return;
+    }
+
+    const targetLeaf =
+      this.findFirstLeafNotExplorer(this.layout.root) ||
+      this.findFirstLeaf(this.layout.root);
+
+    if (targetLeaf) {
+      targetLeaf.tabs.push(tab);
+      targetLeaf.activeTabId = tab.id;
+      this.save();
+    }
+  }
+
+  /**
+   * Update a tab's display title in-place (without persisting to localStorage).
+   * Used for ephemeral updates like terminal shell name changes.
+   */
+  setTabTitle(tabId: string, title: string) {
+    const updateInNode = (node: LayoutNode): void => {
+      if (node.type === "leaf") {
+        const tab = node.tabs.find(t => t.id === tabId);
+        if (tab) { tab.title = title; return; }
+      } else if (node.type === "split") {
+        for (const child of node.children) updateInNode(child);
+      }
+    };
+    updateInNode(this.layout.root);
+    // Intentionally NOT calling this.save() — tab titles are ephemeral;
+    // they reset to "Terminal" on reload, which is expected.
   }
 
   setActiveTab(tabId: string) {
@@ -157,10 +211,13 @@ class LayoutStore {
     removeTabFromNode(this.layout.root);
 
     if (foundTab) {
+      // TypeScript narrows closure-captured variables pessimistically; cast to Tab is safe
+      // because we are inside the if (foundTab) truthy guard.
+      const tab = foundTab as Tab;
       const targetLeaf = this.findNode(this.layout.root, targetLeafId);
       if (targetLeaf && targetLeaf.type === "leaf") {
-        targetLeaf.tabs.push(foundTab);
-        targetLeaf.activeTabId = foundTab!.id;
+        targetLeaf.tabs.push(tab);
+        targetLeaf.activeTabId = tab.id;
         this.save();
       }
     }
@@ -312,9 +369,11 @@ class LayoutStore {
 
   /** Open a new terminal tab. Invokes terminal_create on the Rust backend. */
   async openTerminal(cwd?: string) {
+    // Forward the user's configured default shell (null = use OS $SHELL/$COMSPEC)
+    const shell = settingsStore.settings.terminal.default_shell || null;
     let info: TerminalSessionInfo;
     try {
-      info = await invoke<TerminalSessionInfo>("terminal_create", { cwd: cwd ?? null });
+      info = await invoke<TerminalSessionInfo>("terminal_create", { cwd: cwd ?? null, shell });
     } catch (e) {
       console.error("[layoutStore] Failed to create terminal", e);
       return;
