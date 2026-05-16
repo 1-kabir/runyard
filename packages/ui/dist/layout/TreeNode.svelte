@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
   import type { FsEntry } from "@runyard/common";
   import TreeNode from "./TreeNode.svelte";
   import { File, Folder, FolderOpen } from "lucide-svelte";
+  import { explorerStore } from "./explorerStore.svelte.js";
 
   let { node, onOpenFile, depth = 0 } = $props<{ 
     node: FsEntry, 
@@ -10,7 +12,7 @@
     depth?: number 
   }>();
 
-  let expanded = $state(false);
+  let expanded = $state(explorerStore.isExpanded(node.path));
   let children = $state<FsEntry[]>([]);
   let loading = $state(false);
 
@@ -31,9 +33,16 @@
     }
   }
 
+  onMount(() => {
+    if (expanded) {
+      refresh();
+    }
+  });
+
   async function toggle() {
     if (node.kind === "dir") {
       expanded = !expanded;
+      explorerStore.toggle(node.path, expanded);
       if (expanded) {
         await refresh();
       }

@@ -1,5 +1,5 @@
 declare class ThemeStore {
-    current: "light" | "dark";
+    current: "dark" | "light";
     constructor();
     load(): void;
     save(): void;

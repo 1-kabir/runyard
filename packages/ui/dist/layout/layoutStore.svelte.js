@@ -1,3 +1,6 @@
+import { appStatus } from "./appStatusStore.svelte.js";
+import { settingsStore } from "./settingsStore.svelte.js";
+import { invoke } from "@tauri-apps/api/core";
 const DEFAULT_LAYOUT = {
     root: {
         type: "leaf",
@@ -8,6 +11,8 @@ const DEFAULT_LAYOUT = {
 };
 class LayoutStore {
     layout = $state(DEFAULT_LAYOUT);
+    /** LIFO stack of recently closed non-terminal tabs (max 10). */
+    closedTabHistory = $state([]);
     constructor() {
         this.load();
     }
@@ -65,8 +70,26 @@ class LayoutStore {
             console.warn(`[layoutStore] addTab: could not find leaf ${leafId}`);
         }
     }
-    closeTab(tabId) {
-        console.log(`[layoutStore] closeTab: closing ${tabId}`);
+    closeTab(tabId, force = false) {
+        console.log(`[layoutStore] closeTab: closing ${tabId} (force: ${force})`);
+        // Check if dirty and not forced
+        const findTab = (node) => {
+            if (node.type === "leaf") {
+                return node.tabs.find(t => t.id === tabId) || null;
+            }
+            if (node.type === "split") {
+                for (const child of node.children) {
+                    const found = findTab(child);
+                    if (found)
+                        return found;
+                }
+            }
+            return null;
+        };
+        const tab = findTab(this.layout.root);
+        if (tab && tab.dirty && !force) {
+            return false;
+        }
         const removeTabFromNode = (node) => {
             if (node.type === "leaf") {
                 const idx = node.tabs.findIndex(t => t.id === tabId);
@@ -89,8 +112,61 @@ class LayoutStore {
             return false;
         };
         if (removeTabFromNode(this.layout.root)) {
+            // Track non-terminal tabs so they can be reopened (terminal PTY sessions are dead after close)
+            if (tab && tab.type !== "terminal") {
+                this.closedTabHistory = [...this.closedTabHistory, { ...tab }].slice(-10);
+            }
             this.save();
         }
+        return true;
+    }
+    /** Re-open the most recently closed non-terminal tab. */
+    reopenLastTab() {
+        if (this.closedTabHistory.length === 0)
+            return;
+        const tab = this.closedTabHistory[this.closedTabHistory.length - 1];
+        this.closedTabHistory = this.closedTabHistory.slice(0, -1);
+        // If the tab is already open somewhere, just focus it
+        const alreadyOpen = (node) => {
+            if (node.type === "leaf")
+                return node.tabs.some(t => t.id === tab.id);
+            if (node.type === "split")
+                return node.children.some(c => alreadyOpen(c));
+            return false;
+        };
+        if (alreadyOpen(this.layout.root)) {
+            this.setActiveTab(tab.id);
+            return;
+        }
+        const targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) ||
+            this.findFirstLeaf(this.layout.root);
+        if (targetLeaf) {
+            targetLeaf.tabs.push(tab);
+            targetLeaf.activeTabId = tab.id;
+            this.save();
+        }
+    }
+    /**
+     * Update a tab's display title in-place (without persisting to localStorage).
+     * Used for ephemeral updates like terminal shell name changes.
+     */
+    setTabTitle(tabId, title) {
+        const updateInNode = (node) => {
+            if (node.type === "leaf") {
+                const tab = node.tabs.find(t => t.id === tabId);
+                if (tab) {
+                    tab.title = title;
+                    return;
+                }
+            }
+            else if (node.type === "split") {
+                for (const child of node.children)
+                    updateInNode(child);
+            }
+        };
+        updateInNode(this.layout.root);
+        // Intentionally NOT calling this.save() — tab titles are ephemeral;
+        // they reset to "Terminal" on reload, which is expected.
     }
     setActiveTab(tabId) {
         const setInNode = (node) => {
@@ -132,10 +208,13 @@ class LayoutStore {
         };
         removeTabFromNode(this.layout.root);
         if (foundTab) {
+            // TypeScript narrows closure-captured variables pessimistically; cast to Tab is safe
+            // because we are inside the if (foundTab) truthy guard.
+            const tab = foundTab;
             const targetLeaf = this.findNode(this.layout.root, targetLeafId);
             if (targetLeaf && targetLeaf.type === "leaf") {
-                targetLeaf.tabs.push(foundTab);
-                targetLeaf.activeTabId = foundTab.id;
+                targetLeaf.tabs.push(tab);
+                targetLeaf.activeTabId = tab.id;
                 this.save();
             }
         }
@@ -261,6 +340,7 @@ class LayoutStore {
         };
         let targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) || this.findFirstLeaf(this.layout.root);
         if (targetLeaf) {
+            appStatus.markAsJustOpened(path);
             targetLeaf.tabs.push(newTab);
             targetLeaf.activeTabId = newTab.id;
             this.save();
@@ -276,6 +356,104 @@ class LayoutStore {
             }
         };
         this.save();
+    }
+    /** Open a new terminal tab. Invokes terminal_create on the Rust backend. */
+    async openTerminal(cwd) {
+        // Forward the user's configured default shell (null = use OS $SHELL/$COMSPEC)
+        const shell = settingsStore.settings.terminal.default_shell || null;
+        let info;
+        try {
+            info = await invoke("terminal_create", { cwd: cwd ?? null, shell });
+        }
+        catch (e) {
+            console.error("[layoutStore] Failed to create terminal", e);
+            return;
+        }
+        const tab = {
+            id: `terminal:${info.id}`,
+            type: "terminal",
+            title: "Terminal",
+            props: { terminalId: info.id, cwd: info.cwd },
+        };
+        const targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) ||
+            this.findFirstLeaf(this.layout.root);
+        if (targetLeaf) {
+            targetLeaf.tabs.push(tab);
+            targetLeaf.activeTabId = tab.id;
+            this.save();
+        }
+    }
+    /** Open (or focus) the Git panel. */
+    openGit(workspacePath = "../../") {
+        const tabId = `git:${workspacePath}`;
+        const setFocus = (node) => {
+            if (node.type === "leaf") {
+                if (node.tabs.some((t) => t.id === tabId)) {
+                    node.activeTabId = tabId;
+                    return true;
+                }
+            }
+            else if (node.type === "split") {
+                for (const child of node.children) {
+                    if (setFocus(child))
+                        return true;
+                }
+            }
+            return false;
+        };
+        if (setFocus(this.layout.root)) {
+            this.save();
+            return;
+        }
+        const tab = {
+            id: tabId,
+            type: "git",
+            title: "Git",
+            props: { workspacePath },
+        };
+        const targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) ||
+            this.findFirstLeaf(this.layout.root);
+        if (targetLeaf) {
+            targetLeaf.tabs.push(tab);
+            targetLeaf.activeTabId = tab.id;
+            this.save();
+        }
+    }
+    /** Open (or focus) the Settings panel. */
+    openSettings() {
+        const tabId = "settings";
+        const setFocus = (node) => {
+            if (node.type === "leaf") {
+                if (node.tabs.some((t) => t.id === tabId)) {
+                    node.activeTabId = tabId;
+                    return true;
+                }
+            }
+            else if (node.type === "split") {
+                for (const child of node.children) {
+                    if (setFocus(child))
+                        return true;
+                }
+            }
+            return false;
+        };
+        if (setFocus(this.layout.root)) {
+            this.save();
+            return;
+        }
+        const tab = {
+            id: tabId,
+            type: "settings",
+            title: "Settings",
+            props: {},
+        };
+        const targetLeaf = this.findFirstLeafNotExplorer(this.layout.root) ||
+            this.findFirstLeaf(this.layout.root);
+        if (targetLeaf) {
+            targetLeaf.tabs.push(tab);
+            targetLeaf.activeTabId = tab.id;
+            this.save();
+        }
     }
 }
 export const layoutEngine = new LayoutStore();

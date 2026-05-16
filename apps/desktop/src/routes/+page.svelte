@@ -4,17 +4,20 @@
   import { invoke } from "@tauri-apps/api/core";
   import type { Tab } from "@runyard/common";
 
-  onMount(async () => {
+  onMount(() => {
     platform.current = "desktop";
 
-    // ── Load persisted settings first ──────────────────────────────────────
-    await settingsStore.load();
+    // Run async initialization without returning a Promise to onMount
+    (async () => {
+      // ── Load persisted settings first ──────────────────────────────────────
+      await settingsStore.load();
 
-    // ── Apply saved theme ──────────────────────────────────────────────────
-    const savedTheme = settingsStore.settings.appearance.theme as "light" | "dark" | undefined;
-    if (savedTheme === "light" || savedTheme === "dark") {
-      theme.set(savedTheme);
-    }
+      // ── Apply saved theme ──────────────────────────────────────────────────
+      const savedTheme = settingsStore.settings.appearance.theme as "light" | "dark" | undefined;
+      if (savedTheme === "light" || savedTheme === "dark") {
+        theme.set(savedTheme);
+      }
+    })();
 
     // ── Register all core commands ─────────────────────────────────────────
     commandRegistry.register({
@@ -203,65 +206,69 @@
     });
 
     // ── Initialize layout ─────────────────────────────────────────────────
-    const isLayoutEmpty = (node: any): boolean => {
-      if (node.type === "leaf") return node.tabs.length === 0;
-      if (node.type === "split") return node.children.every((c: any) => isLayoutEmpty(c));
-      return true;
-    };
+    (async () => {
+      const isLayoutEmpty = (node: any): boolean => {
+        if (node.type === "leaf") return node.tabs.length === 0;
+        if (node.type === "split") return node.children.every((c: any) => isLayoutEmpty(c));
+        return true;
+      };
 
-    if (isLayoutEmpty(layoutEngine.layout.root)) {
-      layoutEngine.clearLayout();
-    }
-
-    if (
-      layoutEngine.layout.root.id === "root-leaf" &&
-      layoutEngine.layout.root.type === "leaf" &&
-      layoutEngine.layout.root.tabs.length === 0
-    ) {
-      let homeDir = "../../";
-      try {
-        homeDir = await invoke<string>("get_home_dir");
-      } catch (e) {
-        console.error("Failed to get home dir", e);
+      if (isLayoutEmpty(layoutEngine.layout.root)) {
+        layoutEngine.clearLayout();
       }
 
-      const explorerTab: Tab = {
-        id: "initial-explorer",
-        type: "explorer",
-        title: "Explorer",
-        props: { workspacePath: homeDir },
-      };
-
-      const welcomeTab: Tab = {
-        id: "initial-welcome",
-        type: "welcome",
-        title: "Welcome",
-        props: {},
-      };
-
-      layoutEngine.addTab("root-leaf", explorerTab);
-      layoutEngine.splitLeaf("root-leaf", "horizontal");
-
-      const findFirstEmptyLeaf = (node: any): string | null => {
-        if (node.type === "leaf" && node.tabs.length === 0) return node.id;
-        if (node.type === "split") {
-          for (const child of node.children) {
-            const found = findFirstEmptyLeaf(child);
-            if (found) return found;
-          }
+      const root = layoutEngine.layout.root;
+      if (
+        root.id === "root-leaf" &&
+        root.type === "leaf" &&
+        root.tabs.length === 0
+      ) {
+        let homeDir = "../../";
+        try {
+          homeDir = await invoke<string>("get_home_dir");
+        } catch (e) {
+          console.error("Failed to get home dir", e);
         }
-        return null;
-      };
 
-      const emptyLeafId = findFirstEmptyLeaf(layoutEngine.layout.root);
-      if (emptyLeafId) {
-        layoutEngine.addTab(emptyLeafId, welcomeTab);
-      }
+        const explorerTab: Tab = {
+          id: "initial-explorer",
+          type: "explorer",
+          title: "Explorer",
+          props: { workspacePath: homeDir },
+        };
 
-      if (layoutEngine.layout.root.type === "split") {
-        layoutEngine.resizeLeaf(layoutEngine.layout.root.id, [20, 80]);
+        const welcomeTab: Tab = {
+          id: "initial-welcome",
+          type: "welcome",
+          title: "Welcome",
+          props: {},
+        };
+
+        layoutEngine.addTab("root-leaf", explorerTab);
+        layoutEngine.splitLeaf("root-leaf", "horizontal");
+
+        const findFirstEmptyLeaf = (node: any): string | null => {
+          if (node.type === "leaf" && node.tabs.length === 0) return node.id;
+          if (node.type === "split") {
+            for (const child of node.children) {
+              const found = findFirstEmptyLeaf(child);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+
+        const emptyLeafId = findFirstEmptyLeaf(layoutEngine.layout.root);
+        if (emptyLeafId) {
+          layoutEngine.addTab(emptyLeafId, welcomeTab);
+        }
+
+        const newRoot = layoutEngine.layout.root;
+        if (newRoot.type === "split") {
+          layoutEngine.resizeLeaf(newRoot.id, [20, 80]);
+        }
       }
-    }
+    })();
 
     // ── Global keyboard shortcuts ─────────────────────────────────────────
     function handleGlobalKey(e: KeyboardEvent) {

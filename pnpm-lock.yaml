@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@codemirror/view': 6.43.0
+  '@codemirror/state': 6.5.2
+  '@codemirror/commands': 6.10.3
+
 importers:
 
   .:
@@ -30,7 +35,7 @@ importers:
         specifier: ^0.20.0
         version: 0.20.0
       '@codemirror/commands':
-        specifier: ^6.10.3
+        specifier: 6.10.3
         version: 6.10.3
       '@codemirror/lang-javascript':
         specifier: ^6.2.5
@@ -45,20 +50,17 @@ importers:
         specifier: ^6.7.0
         version: 6.7.0
       '@codemirror/state':
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: 6.5.2
+        version: 6.5.2
       '@codemirror/theme-one-dark':
         specifier: ^6.1.3
         version: 6.1.3
       '@codemirror/view':
-        specifier: ^6.42.1
-        version: 6.42.1
+        specifier: 6.43.0
+        version: 6.43.0
       '@fontsource-variable/google-sans-flex':
         specifier: ^5.2.3
         version: 5.2.3
-      '@fontsource/inter':
-        specifier: ^5.2.8
-        version: 5.2.8
       '@runyard/common':
         specifier: workspace:^
         version: link:../../packages/common
@@ -108,24 +110,42 @@ importers:
 
   packages/editor:
     dependencies:
+      '@codemirror/autocomplete':
+        specifier: ^6.20.2
+        version: 6.20.2
       '@codemirror/basic-setup':
         specifier: latest
         version: 0.20.0
+      '@codemirror/commands':
+        specifier: 6.10.3
+        version: 6.10.3
+      '@codemirror/lang-go':
+        specifier: ^6.0.0
+        version: 6.0.1
       '@codemirror/lang-javascript':
         specifier: ^6.2.5
         version: 6.2.5
       '@codemirror/lang-python':
         specifier: ^6.2.1
         version: 6.2.1
+      '@codemirror/lang-rust':
+        specifier: ^6.0.1
+        version: 6.0.2
+      '@codemirror/language':
+        specifier: ^6.10.8
+        version: 6.12.3
+      '@codemirror/lint':
+        specifier: ^6.8.4
+        version: 6.9.6
       '@codemirror/state':
-        specifier: latest
-        version: 6.6.0
+        specifier: 6.5.2
+        version: 6.5.2
       '@codemirror/theme-one-dark':
         specifier: ^6.1.3
         version: 6.1.3
       '@codemirror/view':
-        specifier: latest
-        version: 6.42.1
+        specifier: 6.43.0
+        version: 6.43.0
     devDependencies:
       typescript:
         specifier: latest
@@ -142,15 +162,21 @@ importers:
       '@fontsource-variable/google-sans-flex':
         specifier: ^5.2.3
         version: 5.2.3
-      '@fontsource/inter':
-        specifier: ^5.2.8
-        version: 5.2.8
+      '@runyard/common':
+        specifier: workspace:^
+        version: link:../common
       '@runyard/editor':
         specifier: workspace:^
         version: link:../editor
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.0
+      '@xterm/addon-fit':
+        specifier: ^0.10.0
+        version: 0.10.0(@xterm/xterm@5.5.0)
+      '@xterm/xterm':
+        specifier: ^5.5.0
+        version: 5.5.0
       lucide-svelte:
         specifier: ^1.0.1
         version: 1.0.1(svelte@5.55.5)
@@ -177,17 +203,20 @@ packages:
     resolution: {integrity: sha512-W/ERKMLErWkrVLyP5I8Yh8PXl4r+WFNkdYVSzkXYPQv2RMPSkWpr2BgggiSJ8AHF/q3GuApncDD8I4BZz65fyg==}
     deprecated: In version 6.0, this package has been renamed to just 'codemirror'
 
-  '@codemirror/commands@0.20.0':
-    resolution: {integrity: sha512-v9L5NNVA+A9R6zaFvaTbxs30kc69F6BkOoiEbeFw4m4I0exmDEKBILN6mK+GksJtvTzGBxvhAPlVFTdQW8GB7Q==}
-
   '@codemirror/commands@6.10.3':
     resolution: {integrity: sha512-JFRiqhKu+bvSkDLI+rUhJwSxQxYb759W5GBezE8Uc8mHLqC9aV/9aTC7yJSqCtB3F00pylrLCwnyS91Ap5ej4Q==}
+
+  '@codemirror/lang-go@6.0.1':
+    resolution: {integrity: sha512-7fNvbyNylvqCphW9HD6WFnRpcDjr+KXX/FgqXy5H5ZS0eC5edDljukm/yNgYkwTsgp2busdod50AOTIy6Jikfg==}
 
   '@codemirror/lang-javascript@6.2.5':
     resolution: {integrity: sha512-zD4e5mS+50htS7F+TYjBPsiIFGanfVqg4HyUz6WNFikgOPf2BgKlx+TQedI1w6n/IqRBVBbBWmGFdLB/7uxO4A==}
 
   '@codemirror/lang-python@6.2.1':
     resolution: {integrity: sha512-IRjC8RUBhn9mGR9ywecNhB51yePWCGgvHfY1lWN/Mrp3cKuHr0isDKia+9HnvhiWNnMpbGhWrkhuWOc09exRyw==}
+
+  '@codemirror/lang-rust@6.0.2':
+    resolution: {integrity: sha512-EZaGjCUegtiU7kSMvOfEZpaCReowEf3yNidYu7+vfuGTm9ow4mthAparY5hisJqOHmJowVH3Upu+eJlUji6qqA==}
 
   '@codemirror/language@0.20.2':
     resolution: {integrity: sha512-WB3Bnuusw0xhVvhBocieYKwJm04SOk5bPoOEYksVHKHcGHFOaYaw+eZVxR4gIqMMcGzOIUil0FsCmFk8yrhHpw==}
@@ -207,20 +236,14 @@ packages:
   '@codemirror/search@6.7.0':
     resolution: {integrity: sha512-ZvGm99wc/s2cITtMT15LFdn8aH/aS+V+DqyGq/N5ZlV5vWtH+nILvC2nw0zX7ByNoHHDZ2IxxdW38O0tc5nVHg==}
 
-  '@codemirror/state@0.20.1':
-    resolution: {integrity: sha512-ms0tlV5A02OK0pFvTtSUGMLkoarzh1F8mr6jy1cD7ucSC2X/VLHtQCxfhdSEGqTYlQF2hoZtmLv+amqhdgbwjQ==}
-
-  '@codemirror/state@6.6.0':
-    resolution: {integrity: sha512-4nbvra5R5EtiCzr9BTHiTLc+MLXK2QGiAVYMyi8PkQd3SR+6ixar/Q/01Fa21TBIDOZXgeWV4WppsQolSreAPQ==}
+  '@codemirror/state@6.5.2':
+    resolution: {integrity: sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA==}
 
   '@codemirror/theme-one-dark@6.1.3':
     resolution: {integrity: sha512-NzBdIvEJmx6fjeremiGp3t/okrLPYT0d9orIc7AFun8oZcRk58aejkqhv6spnz4MLAevrKNPMQYXEWMg4s+sKA==}
 
-  '@codemirror/view@0.20.7':
-    resolution: {integrity: sha512-pqEPCb9QFTOtHgAH5XU/oVy9UR/Anj6r+tG5CRmkNVcqSKEPmBU05WtN/jxJCFZBXf6HumzWC9ydE4qstO3TxQ==}
-
-  '@codemirror/view@6.42.1':
-    resolution: {integrity: sha512-ToN3oFc0nsxNUYVF5P0ztLgbC4UPPjPtA9aKYhkOKQaZASpOUo6ISXyQLP66ctVwlDc+j6Jv0uK5IFALkiXztg==}
+  '@codemirror/view@6.43.0':
+    resolution: {integrity: sha512-V7ZCLQO3Jus9hzh2jVCCPW3mO4IBMr43O37PqSUYautJSnnJF41YlgLw21x0fLJTYvJ+Vkm6Gp+qKGH9pltgXA==}
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -381,9 +404,6 @@ packages:
   '@fontsource-variable/google-sans-flex@5.2.3':
     resolution: {integrity: sha512-g5z9WANJW56gZTWJvu7mIHOiHJaffkk/dhOKqEiK4Nxnsk8lnGnijvGt4vF4KD2KWzscXBOB9XR2sfvTPSi5hA==}
 
-  '@fontsource/inter@5.2.8':
-    resolution: {integrity: sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==}
-
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -406,6 +426,9 @@ packages:
   '@lezer/common@1.5.2':
     resolution: {integrity: sha512-sxQE460fPZyU3sdc8lafxiPwJHBzZRy/udNFynGQky1SePYBdhkBl1kOagA9uT3pxR8K09bOrmTUqA9wb/PjSQ==}
 
+  '@lezer/go@1.0.1':
+    resolution: {integrity: sha512-xToRsYxwsgJNHTgNdStpcvmbVuKxTapV0dM0wey1geMMRc9aggoVyKgzYp41D2/vVOx+Ii4hmE206kvxIXBVXQ==}
+
   '@lezer/highlight@0.16.0':
     resolution: {integrity: sha512-iE5f4flHlJ1g1clOStvXNLbORJoiW4Kytso6ubfYzHnaNo/eo5SKhxs4wv/rtvwZQeZrK3we8S9SyA7OGOoRKQ==}
 
@@ -423,6 +446,9 @@ packages:
 
   '@lezer/python@1.1.18':
     resolution: {integrity: sha512-31FiUrU7z9+d/ElGQLJFXl+dKOdx0jALlP3KEOsGTex8mvj+SoE1FgItcHWK/axkxCHGUSpqIHt6JAWfWu9Rhg==}
+
+  '@lezer/rust@1.0.2':
+    resolution: {integrity: sha512-Lz5sIPBdF2FUXcWeCu1//ojFAZqzTQNRga0aYv6dYXqJqPfMdCAI0NzajWUd4Xijj1IKJLtjoXRPMvTKWBcqKg==}
 
   '@marijn/find-cluster-break@1.0.2':
     resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
@@ -725,6 +751,14 @@ packages:
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
+  '@xterm/addon-fit@0.10.0':
+    resolution: {integrity: sha512-UFYkDm4HUahf2lnEyHvio51TNGiLK66mqP2JoATy7hRZeXaGMRDr00JiSF7m63vR5WKATF605yEggJKsw0JpMQ==}
+    peerDependencies:
+      '@xterm/xterm': ^5.0.0
+
+  '@xterm/xterm@5.5.0':
+    resolution: {integrity: sha512-hqJHYaQb5OptNunnyAnkHyM8aCjZ1MEIDTQu1iIbbTD/xops91NB5yq1ZK/dC2JDbVWtF23zUtl9JE2NqwT87A==}
+
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
@@ -1000,48 +1034,49 @@ snapshots:
   '@codemirror/autocomplete@0.20.3':
     dependencies:
       '@codemirror/language': 0.20.2
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 0.16.1
 
   '@codemirror/autocomplete@6.20.2':
     dependencies:
       '@codemirror/language': 6.12.3
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 1.5.2
 
   '@codemirror/basic-setup@0.20.0':
     dependencies:
       '@codemirror/autocomplete': 0.20.3
-      '@codemirror/commands': 0.20.0
+      '@codemirror/commands': 6.10.3
       '@codemirror/language': 0.20.2
       '@codemirror/lint': 0.20.3
       '@codemirror/search': 0.20.1
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-
-  '@codemirror/commands@0.20.0':
-    dependencies:
-      '@codemirror/language': 0.20.2
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-      '@lezer/common': 0.16.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
 
   '@codemirror/commands@6.10.3':
     dependencies:
       '@codemirror/language': 6.12.3
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 1.5.2
+
+  '@codemirror/lang-go@6.0.1':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.2
+      '@codemirror/language': 6.12.3
+      '@codemirror/state': 6.5.2
+      '@lezer/common': 1.5.2
+      '@lezer/go': 1.0.1
 
   '@codemirror/lang-javascript@6.2.5':
     dependencies:
       '@codemirror/autocomplete': 6.20.2
       '@codemirror/language': 6.12.3
       '@codemirror/lint': 6.9.6
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 1.5.2
       '@lezer/javascript': 1.5.4
 
@@ -1049,14 +1084,19 @@ snapshots:
     dependencies:
       '@codemirror/autocomplete': 6.20.2
       '@codemirror/language': 6.12.3
-      '@codemirror/state': 6.6.0
+      '@codemirror/state': 6.5.2
       '@lezer/common': 1.5.2
       '@lezer/python': 1.1.18
 
+  '@codemirror/lang-rust@6.0.2':
+    dependencies:
+      '@codemirror/language': 6.12.3
+      '@lezer/rust': 1.0.2
+
   '@codemirror/language@0.20.2':
     dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 0.16.1
       '@lezer/highlight': 0.16.0
       '@lezer/lr': 0.16.3
@@ -1064,8 +1104,8 @@ snapshots:
 
   '@codemirror/language@6.12.3':
     dependencies:
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/common': 1.5.2
       '@lezer/highlight': 1.2.3
       '@lezer/lr': 1.4.10
@@ -1073,50 +1113,42 @@ snapshots:
 
   '@codemirror/lint@0.20.3':
     dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       crelt: 1.0.6
 
   '@codemirror/lint@6.9.6':
     dependencies:
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       crelt: 1.0.6
 
   '@codemirror/search@0.20.1':
     dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       crelt: 1.0.6
 
   '@codemirror/search@6.7.0':
     dependencies:
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       crelt: 1.0.6
 
-  '@codemirror/state@0.20.1': {}
-
-  '@codemirror/state@6.6.0':
+  '@codemirror/state@6.5.2':
     dependencies:
       '@marijn/find-cluster-break': 1.0.2
 
   '@codemirror/theme-one-dark@6.1.3':
     dependencies:
       '@codemirror/language': 6.12.3
-      '@codemirror/state': 6.6.0
-      '@codemirror/view': 6.42.1
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.43.0
       '@lezer/highlight': 1.2.3
 
-  '@codemirror/view@0.20.7':
+  '@codemirror/view@6.43.0':
     dependencies:
-      '@codemirror/state': 0.20.1
-      style-mod: 4.1.3
-      w3c-keyname: 2.2.8
-
-  '@codemirror/view@6.42.1':
-    dependencies:
-      '@codemirror/state': 6.6.0
+      '@codemirror/state': 6.5.2
       crelt: 1.0.6
       style-mod: 4.1.3
       w3c-keyname: 2.2.8
@@ -1201,8 +1233,6 @@ snapshots:
 
   '@fontsource-variable/google-sans-flex@5.2.3': {}
 
-  '@fontsource/inter@5.2.8': {}
-
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -1225,6 +1255,12 @@ snapshots:
   '@lezer/common@0.16.1': {}
 
   '@lezer/common@1.5.2': {}
+
+  '@lezer/go@1.0.1':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
 
   '@lezer/highlight@0.16.0':
     dependencies:
@@ -1249,6 +1285,12 @@ snapshots:
       '@lezer/common': 1.5.2
 
   '@lezer/python@1.1.18':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/rust@1.0.2':
     dependencies:
       '@lezer/common': 1.5.2
       '@lezer/highlight': 1.2.3
@@ -1474,6 +1516,12 @@ snapshots:
   '@types/estree@1.0.9': {}
 
   '@types/trusted-types@2.0.7': {}
+
+  '@xterm/addon-fit@0.10.0(@xterm/xterm@5.5.0)':
+    dependencies:
+      '@xterm/xterm': 5.5.0
+
+  '@xterm/xterm@5.5.0': {}
 
   acorn@8.16.0: {}
 
