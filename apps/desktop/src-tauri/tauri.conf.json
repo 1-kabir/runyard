@@ -15,8 +15,7 @@
         "title": "Runyard",
         "width": 1280,
         "height": 800,
-        "visible": false,
-        "background": "#000000"
+        "visible": false
       }
     ],
     "security": {
