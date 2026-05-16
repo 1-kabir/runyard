@@ -179,7 +179,7 @@
 
       <div class="palette-results">
         {#if results.length === 0}
-          <div class="no-results">No commands found for "{query}"</div>
+          <div class="no-results">No results for "{query}"</div>
         {:else}
           {flatIndex = 0}
           {#each grouped as group}

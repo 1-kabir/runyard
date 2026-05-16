@@ -194,6 +194,14 @@
       },
     });
 
+    commandRegistry.register({
+      id: "tab.reopenLast",
+      title: "Reopen Last Closed Tab",
+      category: "View",
+      shortcut: "Ctrl+Shift+T",
+      handler: () => layoutEngine.reopenLastTab(),
+    });
+
     // ── Initialize layout ─────────────────────────────────────────────────
     const isLayoutEmpty = (node: any): boolean => {
       if (node.type === "leaf") return node.tabs.length === 0;
@@ -264,6 +272,10 @@
       if ((e.ctrlKey || e.metaKey) && e.key === ",") {
         e.preventDefault();
         commandRegistry.execute("settings.open");
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "T") {
+        e.preventDefault();
+        commandRegistry.execute("tab.reopenLast");
       }
     }
     window.addEventListener("keydown", handleGlobalKey);
