@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { commandRegistry } from "./commandRegistry.svelte.js";
   import { layoutEngine } from "./layoutStore.svelte.js";
-  import type { Command } from "@runyard/common";
+  import { appStatus } from "./appStatusStore.svelte.js";
 
   let { open = $bindable(false) }: { open?: boolean } = $props();
 
@@ -10,14 +10,62 @@
   let selectedIndex = $state(0);
   let inputEl: HTMLInputElement;
 
-  // Fuzzy-search filtered results
-  let results = $derived.by(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return commandRegistry.commands.slice(0, 40);
+  /** Unified palette item — commands, tabs, and recent files all share this shape. */
+  interface PaletteItem {
+    id: string;
+    title: string;
+    subtitle?: string;
+    category: string;
+    shortcut?: string;
+    handler: () => void;
+  }
 
-    return commandRegistry.commands
-      .filter((cmd) => {
-        const haystack = `${cmd.title} ${cmd.category} ${cmd.subtitle ?? ""}`.toLowerCase();
+  /** Recursively collect all non-welcome tabs from the layout tree. */
+  function collectTabs(node: any): { id: string; title: string; type: string }[] {
+    if (node.type === "leaf") {
+      return (node.tabs as any[]).filter((t) => t.type !== "welcome");
+    }
+    if (node.type === "split") {
+      return (node.children as any[]).flatMap(collectTabs);
+    }
+    return [];
+  }
+
+  let tabResults = $derived.by((): PaletteItem[] =>
+    collectTabs(layoutEngine.layout.root).map((tab) => ({
+      id: `tab:${tab.id}`,
+      title: tab.title,
+      subtitle: tab.type === "editor" ? tab.id : tab.type,
+      category: "Open Tabs",
+      handler: () => layoutEngine.setActiveTab(tab.id),
+    }))
+  );
+
+  let recentResults = $derived.by((): PaletteItem[] =>
+    appStatus.recentFiles.map((path) => {
+      const name = path.split("/").pop() ?? path;
+      return {
+        id: `recent:${path}`,
+        title: name,
+        subtitle: path,
+        category: "Recent Files",
+        handler: () => layoutEngine.openEditor(path, name),
+      };
+    })
+  );
+
+  // Fuzzy-search filtered results — commands + open tabs + recent files
+  let results = $derived.by((): PaletteItem[] => {
+    const q = query.trim().toLowerCase();
+    const allItems: PaletteItem[] = [
+      ...(commandRegistry.commands as PaletteItem[]),
+      ...tabResults,
+      ...recentResults,
+    ];
+    if (!q) return allItems.slice(0, 40);
+    return allItems
+      .filter((item) => {
+        const haystack = `${item.title} ${item.category} ${item.subtitle ?? ""}`.toLowerCase();
         return fuzzyMatch(q, haystack);
       })
       .slice(0, 40);
@@ -44,7 +92,7 @@
     query = "";
   }
 
-  function execute(cmd: Command) {
+  function execute(cmd: PaletteItem) {
     close();
     setTimeout(() => cmd.handler(), 0);
   }
@@ -82,9 +130,9 @@
   }
 
   // Group results by category
-  type Group = { category: string; items: Command[] };
+  type Group = { category: string; items: PaletteItem[] };
   let grouped = $derived.by((): Group[] => {
-    const map = new Map<string, Command[]>();
+    const map = new Map<string, PaletteItem[]>();
     for (const cmd of results) {
       const list = map.get(cmd.category) ?? [];
       list.push(cmd);
