@@ -147,6 +147,14 @@
     };
     window.addEventListener("blur", handleBlur);
 
+    // Global save command — only act when this file is the active one
+    const handleSaveCmd = () => {
+      if (!loadError && appStatus.activeFilePath === filePath) {
+        saveFile(currentContent);
+      }
+    };
+    document.addEventListener("runyard:save-current-file", handleSaveCmd);
+
     // Ensure LSP settings are loaded
     if (!settingsStore.loaded) {
       await settingsStore.load();
@@ -188,6 +196,9 @@
       doc: currentContent,
       filePath,
       lspExtensions,
+      fontSize: settingsStore.settings.editor.font_size || 14,
+      tabSize: settingsStore.settings.editor.tab_size || 2,
+      lineWrap: settingsStore.settings.editor.line_wrap ?? false,
       onChange: (content) => {
         currentContent = content;
       },
@@ -216,6 +227,7 @@
 
     return () => {
       window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("runyard:save-current-file", handleSaveCmd);
       if (editorInstance) editorInstance.destroy();
       appStatus.updateActiveFile(null);
       appStatus.updateCursor(1, 1);
@@ -332,7 +344,8 @@
   }
   :global(.cm-scroller) {
     font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
-    font-size: 14px;
+    /* --editor-font-size is set dynamically by setupEditor() from settings */
+    font-size: var(--editor-font-size, 14px);
   }
   :global(.cm-scroller::-webkit-scrollbar) {
     width: 10px;

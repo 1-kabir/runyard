@@ -14,7 +14,9 @@
     RefreshCw,
     AlertCircle,
     Layers,
+    FolderOpen,
   } from "lucide-svelte";
+  import { layoutEngine } from "./layoutStore.svelte.js";
   import type {
     GitStatus,
     GitFileEntry,
@@ -215,6 +217,10 @@
     } catch (e) {
       operationError = String(e);
     }
+  }
+
+  function openWorktreeAsWorkspace(wt: GitWorktree) {
+    layoutEngine.openGit(wt.path);
   }
 
   function statusIcon(s: string) {
@@ -481,15 +487,24 @@
             {/if}
             <span class="wt-path">{wt.path}</span>
           </div>
-          {#if !wt.is_main}
+          <div class="worktree-actions">
             <button
-              class="icon-btn danger"
-              title="Remove worktree"
-              onclick={() => removeWorktree(wt.name)}
+              class="icon-btn"
+              title="Open worktree as workspace"
+              onclick={() => openWorktreeAsWorkspace(wt)}
             >
-              <Minus size={11} />
+              <FolderOpen size={11} />
             </button>
-          {/if}
+            {#if !wt.is_main}
+              <button
+                class="icon-btn danger"
+                title="Remove worktree"
+                onclick={() => removeWorktree(wt.name)}
+              >
+                <Minus size={11} />
+              </button>
+            {/if}
+          </div>
         </div>
       {/each}
 
@@ -801,6 +816,13 @@
     gap: 8px;
     padding: 4px 8px;
     margin: 0 4px;
+  }
+
+  .worktree-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+    align-items: center;
   }
 
   .worktree-info {

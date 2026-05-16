@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Layout, layoutEngine, platform, commandRegistry, settingsStore, theme } from "@runyard/ui";
+  import { Layout, layoutEngine, platform, commandRegistry, settingsStore, theme, appStatus } from "@runyard/ui";
   import { invoke } from "@tauri-apps/api/core";
   import type { Tab } from "@runyard/common";
 
@@ -111,8 +111,7 @@
       id: "terminal.newCwd",
       title: "Open Terminal in Current Directory",
       category: "Terminal",
-      handler: async () => {
-        const { appStatus } = await import("@runyard/ui");
+      handler: () => {
         const activePath = appStatus.activeFilePath;
         const cwd = activePath
           ? activePath.substring(0, activePath.lastIndexOf("/") || 0) || "/"
@@ -122,12 +121,76 @@
     });
 
     commandRegistry.register({
+      id: "tab.close",
+      title: "Close Tab",
+      category: "View",
+      shortcut: "Ctrl+W",
+      handler: () => {
+        // Editor tab IDs equal the file path
+        const activePath = appStatus.activeFilePath;
+        if (activePath) {
+          layoutEngine.closeTab(activePath);
+          return;
+        }
+        // For non-editor tabs, let the focused pane handle it
+        document.dispatchEvent(new CustomEvent("runyard:close-active-tab"));
+      },
+    });
+
+    commandRegistry.register({
+      id: "editor.focus",
+      title: "Focus Editor",
+      category: "View",
+      handler: () => {
+        // Focus the CodeMirror content element of the active editor
+        const cmContent = document.querySelector<HTMLElement>(".cm-content");
+        if (cmContent) cmContent.focus();
+      },
+    });
+
+    commandRegistry.register({
+      id: "file.open",
+      title: "Open File",
+      category: "File",
+      shortcut: "Ctrl+O",
+      handler: () => {
+        // Focus the file explorer so the user can navigate to a file
+        const findExplorer = (node: any): string | null => {
+          if (node.type === "leaf") {
+            const t = node.tabs.find((t: any) => t.type === "explorer");
+            return t ? t.id : null;
+          }
+          if (node.type === "split") {
+            for (const child of node.children) {
+              const found = findExplorer(child);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        const tabId = findExplorer(layoutEngine.layout.root);
+        if (tabId) layoutEngine.setActiveTab(tabId);
+      },
+    });
+
+    commandRegistry.register({
+      id: "file.save",
+      title: "Save Current File",
+      category: "File",
+      shortcut: "Ctrl+S",
+      handler: () => {
+        document.dispatchEvent(new CustomEvent("runyard:save-current-file"));
+      },
+    });
+
+    commandRegistry.register({
       id: "file.saveAll",
       title: "Save All Open Files",
       category: "File",
       shortcut: "Ctrl+Shift+S",
       handler: () => {
-        console.log("[commands] save-all triggered");
+        // Broadcasts to all mounted EditorPanel instances; each saves if active
+        document.dispatchEvent(new CustomEvent("runyard:save-current-file"));
       },
     });
 
