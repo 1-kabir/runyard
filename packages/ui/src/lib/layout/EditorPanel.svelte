@@ -28,6 +28,11 @@
   // Flag to ignore fs:changed events triggered by our own writes
   let ignoringNextChange = false;
 
+  // Refs held so onDestroy can clean up after the async onMount
+  let _blurHandler: (() => void) | null = null;
+  let _saveCmdHandler: (() => void) | null = null;
+  let _unlistenFs: (() => void) | null = null;
+
   let isDirty = $derived(savedContent !== currentContent && savedContent !== "");
 
   $effect(() => {
@@ -139,21 +144,30 @@
     await lspStore.send(language, initMsg);
   }
 
+  onDestroy(() => {
+    if (_blurHandler) window.removeEventListener("blur", _blurHandler);
+    if (_saveCmdHandler) document.removeEventListener("runyard:save-current-file", _saveCmdHandler);
+    if (editorInstance) editorInstance.destroy();
+    appStatus.updateActiveFile(null);
+    appStatus.updateCursor(1, 1);
+    if (_unlistenFs) _unlistenFs();
+  });
+
   onMount(async () => {
-    const handleBlur = () => {
+    _blurHandler = () => {
       if (isDirty) {
         saveFile(currentContent);
       }
     };
-    window.addEventListener("blur", handleBlur);
+    window.addEventListener("blur", _blurHandler);
 
     // Global save command — only act when this file is the active one
-    const handleSaveCmd = () => {
+    _saveCmdHandler = () => {
       if (!loadError && appStatus.activeFilePath === filePath) {
         saveFile(currentContent);
       }
     };
-    document.addEventListener("runyard:save-current-file", handleSaveCmd);
+    document.addEventListener("runyard:save-current-file", _saveCmdHandler);
 
     // Ensure LSP settings are loaded
     if (!settingsStore.loaded) {
@@ -213,8 +227,8 @@
     await loadFile();
     appStatus.updateActiveFile(filePath);
 
-    // External change listener
-    const unlisten = listen<string>("fs:changed", (event) => {
+    // External change listener — store unlisten fn for onDestroy
+    _unlistenFs = await listen<string>("fs:changed", (event) => {
       if (event.payload === filePath) {
         if (ignoringNextChange) return;
         if (!isDirty) {
@@ -224,15 +238,6 @@
         }
       }
     });
-
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("runyard:save-current-file", handleSaveCmd);
-      if (editorInstance) editorInstance.destroy();
-      appStatus.updateActiveFile(null);
-      appStatus.updateCursor(1, 1);
-      unlisten.then((f) => f());
-    };
   });
 </script>
 

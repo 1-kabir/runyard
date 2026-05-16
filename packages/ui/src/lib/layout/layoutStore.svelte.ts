@@ -211,10 +211,13 @@ class LayoutStore {
     removeTabFromNode(this.layout.root);
 
     if (foundTab) {
+      // TypeScript narrows closure-captured variables pessimistically; cast to Tab is safe
+      // because we are inside the if (foundTab) truthy guard.
+      const tab = foundTab as Tab;
       const targetLeaf = this.findNode(this.layout.root, targetLeafId);
       if (targetLeaf && targetLeaf.type === "leaf") {
-        targetLeaf.tabs.push(foundTab);
-        targetLeaf.activeTabId = foundTab!.id;
+        targetLeaf.tabs.push(tab);
+        targetLeaf.activeTabId = tab.id;
         this.save();
       }
     }

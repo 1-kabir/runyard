@@ -379,21 +379,24 @@ export function createLspExtension(options: LspExtensionOptions): Extension[] {
 let lspRequestId = 1;
 const pendingRequests = new Map<number, { resolve: (v: unknown) => void; reject: (e: unknown) => void }>();
 const notificationHandlers = new Map<string, Set<(params: unknown) => void>>();
-let globalUnlisten: (() => void) | null = null;
+let _lspClientInitialized = false;
 
-export async function initLspClient(
+/** Wire up incoming LSP messages from Rust to the pending-request/notification system.
+ *  Must be called once on app startup (e.g. in StatusBar onMount).
+ *  Safe to call multiple times — subsequent calls are no-ops. */
+export function initLspClient(
   lspStore: {
     onMessage: (handler: (language: string, message: unknown) => void) => () => void;
-    send: (language: string, message: unknown) => void;
   }
-): Promise<void> {
-  // Register global message handler
-  lspStore.onMessage((language, message) => {
-    routeLspMessage(language, message);
+): void {
+  if (_lspClientInitialized) return;
+  _lspClientInitialized = true;
+  lspStore.onMessage((_language, message) => {
+    routeLspMessage(message);
   });
 }
 
-function routeLspMessage(_language: string, message: unknown) {
+function routeLspMessage(message: unknown) {
   const msg = message as any;
   if (msg.id !== undefined && !msg.method) {
     // Response
