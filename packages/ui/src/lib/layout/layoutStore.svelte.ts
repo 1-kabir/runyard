@@ -1,5 +1,6 @@
-import type { Layout, LayoutNode, LeafNode, SplitNode, Tab } from "@runyard/common";
+import type { Layout, LayoutNode, LeafNode, SplitNode, Tab, TerminalSessionInfo } from "@runyard/common";
 import { appStatus } from "./appStatusStore.svelte.js";
+import { invoke } from "@tauri-apps/api/core";
 
 const DEFAULT_LAYOUT: Layout = {
   root: {
@@ -307,6 +308,116 @@ class LayoutStore {
       }
     };
     this.save();
+  }
+
+  /** Open a new terminal tab. Invokes terminal_create on the Rust backend. */
+  async openTerminal(cwd?: string) {
+    let info: TerminalSessionInfo;
+    try {
+      info = await invoke<TerminalSessionInfo>("terminal_create", { cwd: cwd ?? null });
+    } catch (e) {
+      console.error("[layoutStore] Failed to create terminal", e);
+      return;
+    }
+
+    const tab: Tab = {
+      id: `terminal:${info.id}`,
+      type: "terminal",
+      title: "Terminal",
+      props: { terminalId: info.id, cwd: info.cwd },
+    };
+
+    const targetLeaf =
+      this.findFirstLeafNotExplorer(this.layout.root) ||
+      this.findFirstLeaf(this.layout.root);
+
+    if (targetLeaf) {
+      targetLeaf.tabs.push(tab);
+      targetLeaf.activeTabId = tab.id;
+      this.save();
+    }
+  }
+
+  /** Open (or focus) the Git panel. */
+  openGit(workspacePath = "../../") {
+    const tabId = `git:${workspacePath}`;
+
+    const setFocus = (node: LayoutNode): boolean => {
+      if (node.type === "leaf") {
+        if (node.tabs.some((t) => t.id === tabId)) {
+          node.activeTabId = tabId;
+          return true;
+        }
+      } else if (node.type === "split") {
+        for (const child of node.children) {
+          if (setFocus(child)) return true;
+        }
+      }
+      return false;
+    };
+
+    if (setFocus(this.layout.root)) {
+      this.save();
+      return;
+    }
+
+    const tab: Tab = {
+      id: tabId,
+      type: "git",
+      title: "Git",
+      props: { workspacePath },
+    };
+
+    const targetLeaf =
+      this.findFirstLeafNotExplorer(this.layout.root) ||
+      this.findFirstLeaf(this.layout.root);
+
+    if (targetLeaf) {
+      targetLeaf.tabs.push(tab);
+      targetLeaf.activeTabId = tab.id;
+      this.save();
+    }
+  }
+
+  /** Open (or focus) the Settings panel. */
+  openSettings() {
+    const tabId = "settings";
+
+    const setFocus = (node: LayoutNode): boolean => {
+      if (node.type === "leaf") {
+        if (node.tabs.some((t) => t.id === tabId)) {
+          node.activeTabId = tabId;
+          return true;
+        }
+      } else if (node.type === "split") {
+        for (const child of node.children) {
+          if (setFocus(child)) return true;
+        }
+      }
+      return false;
+    };
+
+    if (setFocus(this.layout.root)) {
+      this.save();
+      return;
+    }
+
+    const tab: Tab = {
+      id: tabId,
+      type: "settings",
+      title: "Settings",
+      props: {},
+    };
+
+    const targetLeaf =
+      this.findFirstLeafNotExplorer(this.layout.root) ||
+      this.findFirstLeaf(this.layout.root);
+
+    if (targetLeaf) {
+      targetLeaf.tabs.push(tab);
+      targetLeaf.activeTabId = tab.id;
+      this.save();
+    }
   }
 }
 

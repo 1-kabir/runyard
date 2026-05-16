@@ -7,6 +7,16 @@ use notify::{Watcher, RecursiveMode, Config};
 use git2::Repository;
 use tempfile::NamedTempFile;
 
+// New M2 modules
+pub mod settings;
+pub mod git_ops;
+pub mod terminal;
+pub mod lsp_manager;
+
+// Re-export state types for Tauri setup
+pub use terminal::TerminalState;
+pub use lsp_manager::LspState;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FsEntry {
     pub name: String,
@@ -30,7 +40,7 @@ pub mod commands {
             if let Ok(entry) = entry {
                 let (kind, size) = match entry.metadata() {
                     Ok(meta) => (if meta.is_dir() { "dir" } else { "file" }, meta.len()),
-                    Err(_) => ("file", 0) // Fallback if we can't read metadata (e.g. permissions)
+                    Err(_) => ("file", 0)
                 };
                 result.push(FsEntry {
                     name: entry.file_name().to_string_lossy().into_owned(),
@@ -62,18 +72,18 @@ pub mod commands {
     pub fn fs_write(path: String, contents: String) -> Result<(), String> {
         let path_buf = Path::new(&path);
         let dir = path_buf.parent().ok_or("Invalid path")?;
-        
+
         let mut temp = NamedTempFile::new_in(dir).map_err(|e| e.to_string())?;
         temp.write_all(contents.as_bytes()).map_err(|e| e.to_string())?;
         temp.persist(path_buf).map_err(|e| e.to_string())?;
-        
+
         Ok(())
     }
 
     #[tauri::command]
     pub fn fs_watch<R: Runtime>(app: AppHandle<R>, path: String) -> Result<(), String> {
         let path_clone = path.clone();
-        
+
         std::thread::spawn(move || {
             let (tx, rx) = std::sync::mpsc::channel();
             let mut watcher = notify::RecommendedWatcher::new(tx, Config::default()).unwrap();
@@ -105,7 +115,6 @@ pub mod commands {
 
     #[tauri::command]
     pub fn get_home_dir() -> Result<String, String> {
-        // Try standard environment variables
         let path = if cfg!(target_os = "windows") {
             std::env::var("USERPROFILE")
                 .or_else(|_| {
@@ -122,8 +131,7 @@ pub mod commands {
             std::env::var("HOME")
                 .map_err(|e| e.to_string())?
         };
-        
-        // Ensure it's a valid directory and absolute
+
         let p = std::path::PathBuf::from(path);
         if p.exists() && p.is_dir() {
             Ok(p.to_string_lossy().to_string())
@@ -166,7 +174,6 @@ mod tests {
 
     #[test]
     fn test_git_branch() {
-        // Test on the current repository root
         let result = git_branch("../../".to_string());
         assert!(result.is_ok());
         let branch = result.unwrap();

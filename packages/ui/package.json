@@ -23,8 +23,11 @@
   },
   "dependencies": {
     "@fontsource-variable/google-sans-flex": "^5.2.3",
+    "@runyard/common": "workspace:^",
     "@runyard/editor": "workspace:^",
     "@tauri-apps/api": "^2",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
     "lucide-svelte": "^1.0.1"
   }
 }

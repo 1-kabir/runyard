@@ -5,6 +5,7 @@
   import { X } from "lucide-svelte";
   import Modal from "../Modal.svelte";
   import Checkbox from "../Checkbox.svelte";
+  import { invoke } from "@tauri-apps/api/core";
 
   let { tabs, activeTabId, leafId } = $props<{ tabs: Tab[], activeTabId: string | null, leafId: string }>();
 
@@ -15,12 +16,33 @@
   let pendingCloseTabId = $state<string | null>(null);
   let dontAskAgain = $state(false);
 
+  function cleanupTerminalTab(tab: Tab) {
+    if (tab.type !== "terminal") return;
+    const terminalId = tab.props?.terminalId as string | undefined;
+    if (!terminalId) return;
+
+    // Kill the PTY session in Rust
+    invoke("terminal_close", { id: terminalId }).catch(() => {});
+
+    // Dispose the xterm instance from the global cache
+    const cache = (window as any).__runyard_terminals as Map<string, any> | undefined;
+    if (cache) {
+      const entry = cache.get(terminalId);
+      if (entry) {
+        try { entry.fitAddon?.dispose?.(); } catch {}
+        try { entry.terminal?.dispose?.(); } catch {}
+        cache.delete(terminalId);
+      }
+    }
+  }
+
   function handleClose(tabId: string) {
     const tab = tabs.find(t => t.id === tabId);
     if (tab && tab.dirty && !appStatus.suppressSaveConfirmation) {
       pendingCloseTabId = tabId;
       showSaveModal = true;
     } else {
+      if (tab) cleanupTerminalTab(tab);
       layoutEngine.closeTab(tabId, true);
     }
   }
@@ -30,6 +52,8 @@
       appStatus.suppressSaveConfirmation = true;
     }
     if (pendingCloseTabId) {
+      const tab = tabs.find(t => t.id === pendingCloseTabId);
+      if (tab) cleanupTerminalTab(tab);
       layoutEngine.closeTab(pendingCloseTabId, true);
     }
     showSaveModal = false;
