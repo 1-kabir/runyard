@@ -1,5 +1,5 @@
 use git2::{
-    BranchType, DiffOptions, IndexAddOption, ObjectType, Repository, ResetType,
+    BranchType, Repository,
     Signature, StatusOptions,
 };
 use serde::{Deserialize, Serialize};
@@ -401,25 +401,27 @@ pub fn git_worktrees(path: String) -> Result<Vec<GitWorktree>, String> {
 
     // Add linked worktrees
     for name_binding in worktree_names.iter() {
-        let name = name_binding.to_string();
-        if let Ok(wt) = repo.find_worktree(&name) {
-            let wt_path = wt.path().to_string_lossy().to_string();
-            // Try to get the branch of the worktree
-            let wt_branch = if let Ok(wt_repo) = Repository::open(&wt_path) {
-                wt_repo
-                    .head()
-                    .ok()
-                    .and_then(|h| h.shorthand().map(|s| s.to_string()))
-            } else {
-                None
-            };
+        if let Some(name_str) = name_binding {
+            let name = name_str.to_string();
+            if let Ok(wt) = repo.find_worktree(&name) {
+                let wt_path = wt.path().to_string_lossy().to_string();
+                // Try to get the branch of the worktree
+                let wt_branch = if let Ok(wt_repo) = Repository::open(&wt_path) {
+                    wt_repo
+                        .head()
+                        .ok()
+                        .and_then(|h| h.shorthand().map(|s| s.to_string()))
+                } else {
+                    None
+                };
 
-            result.push(GitWorktree {
-                name,
-                path: wt_path,
-                branch: wt_branch,
-                is_main: false,
-            });
+                result.push(GitWorktree {
+                    name,
+                    path: wt_path,
+                    branch: wt_branch,
+                    is_main: false,
+                });
+            }
         }
     }
 
@@ -439,12 +441,16 @@ pub fn git_worktree_create(
     let mut opts = git2::WorktreeAddOptions::new();
 
     // If a branch name is provided, resolve it
-    if let Some(ref branch_name) = branch {
+    let reference = if let Some(ref branch_name) = branch {
         let branch_obj = repo
             .find_branch(branch_name, BranchType::Local)
             .map_err(|e| format!("Branch '{}' not found: {}", branch_name, e))?;
-        let reference = branch_obj.into_reference();
-        opts.reference(Some(&reference));
+        Some(branch_obj.into_reference())
+    } else {
+        None
+    };
+    if let Some(ref r) = reference {
+        opts.reference(Some(r));
     }
 
     repo.worktree(&name, Path::new(&target_path), Some(&opts))

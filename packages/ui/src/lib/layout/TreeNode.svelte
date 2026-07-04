@@ -12,7 +12,7 @@
     depth?: number 
   }>();
 
-  let expanded = $state(explorerStore.isExpanded(node.path));
+  let expanded = $derived(explorerStore.isExpanded(node.path));
   let children = $state<FsEntry[]>([]);
   let loading = $state(false);
 
@@ -41,9 +41,9 @@
 
   async function toggle() {
     if (node.kind === "dir") {
-      expanded = !expanded;
-      explorerStore.toggle(node.path, expanded);
-      if (expanded) {
+      const nextExpanded = !expanded;
+      explorerStore.toggle(node.path, nextExpanded);
+      if (nextExpanded) {
         await refresh();
       }
     } else {

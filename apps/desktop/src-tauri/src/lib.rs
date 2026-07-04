@@ -1,12 +1,3 @@
-use runyard_core::commands::{fs_list, fs_read, fs_write, fs_watch, git_branch, get_home_dir};
-use runyard_core::settings::{settings_load, settings_save};
-use runyard_core::git_ops::{
-    git_status, git_stage, git_unstage, git_discard, git_commit,
-    git_log, git_branches, git_checkout, git_create_branch,
-    git_worktrees, git_worktree_create, git_worktree_remove,
-};
-use runyard_core::lsp_manager::{lsp_start, lsp_send, lsp_stop, lsp_status, lsp_status_all};
-use runyard_core::terminal::{terminal_create, terminal_write, terminal_resize, terminal_close, terminal_list};
 use runyard_core::{TerminalState, LspState};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -18,42 +9,42 @@ pub fn run() {
         .manage(LspState::default())
         .invoke_handler(tauri::generate_handler![
             // ── Filesystem ──────────────────────────────────────────────────
-            fs_list,
-            fs_read,
-            fs_write,
-            fs_watch,
+            runyard_core::commands::fs_list,
+            runyard_core::commands::fs_read,
+            runyard_core::commands::fs_write,
+            runyard_core::commands::fs_watch,
             // ── Git (legacy single-command) ──────────────────────────────
-            git_branch,
+            runyard_core::commands::git_branch,
             // ── Git (M2 full operations) ─────────────────────────────────
-            git_status,
-            git_stage,
-            git_unstage,
-            git_discard,
-            git_commit,
-            git_log,
-            git_branches,
-            git_checkout,
-            git_create_branch,
-            git_worktrees,
-            git_worktree_create,
-            git_worktree_remove,
+            runyard_core::git_ops::git_status,
+            runyard_core::git_ops::git_stage,
+            runyard_core::git_ops::git_unstage,
+            runyard_core::git_ops::git_discard,
+            runyard_core::git_ops::git_commit,
+            runyard_core::git_ops::git_log,
+            runyard_core::git_ops::git_branches,
+            runyard_core::git_ops::git_checkout,
+            runyard_core::git_ops::git_create_branch,
+            runyard_core::git_ops::git_worktrees,
+            runyard_core::git_ops::git_worktree_create,
+            runyard_core::git_ops::git_worktree_remove,
             // ── Settings ────────────────────────────────────────────────
-            settings_load,
-            settings_save,
+            runyard_core::settings::settings_load,
+            runyard_core::settings::settings_save,
             // ── Terminal ────────────────────────────────────────────────
-            terminal_create,
-            terminal_write,
-            terminal_resize,
-            terminal_close,
-            terminal_list,
+            runyard_core::terminal::terminal_create,
+            runyard_core::terminal::terminal_write,
+            runyard_core::terminal::terminal_resize,
+            runyard_core::terminal::terminal_close,
+            runyard_core::terminal::terminal_list,
             // ── LSP ─────────────────────────────────────────────────────
-            lsp_start,
-            lsp_send,
-            lsp_stop,
-            lsp_status,
-            lsp_status_all,
+            runyard_core::lsp_manager::lsp_start,
+            runyard_core::lsp_manager::lsp_send,
+            runyard_core::lsp_manager::lsp_stop,
+            runyard_core::lsp_manager::lsp_status,
+            runyard_core::lsp_manager::lsp_status_all,
             // ── Misc ────────────────────────────────────────────────────
-            get_home_dir,
+            runyard_core::commands::get_home_dir,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

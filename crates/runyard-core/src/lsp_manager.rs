@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
-use std::process::{Child, ChildStdin, Command, Stdio};
+use std::process::{ChildStdin, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Runtime, State};
 
@@ -119,7 +119,6 @@ fn read_lsp_message(reader: &mut impl BufRead) -> Option<String> {
 
     let len = content_length?;
     let mut body = vec![0u8; len];
-    use std::io::Read;
     reader.read_exact(&mut body).ok()?;
     String::from_utf8(body).ok()
 }
