@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Emitter, Runtime, State};
+use tauri::{AppHandle, Runtime, State};
 use uuid::Uuid;
+use crate::EventBridge;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ pub struct TerminalManagerInner {
     pub sessions: HashMap<String, TerminalSession>,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TerminalState(pub Arc<Mutex<TerminalManagerInner>>);
 
 // ─── Helper: resolve default shell ───────────────────────────────────────────
@@ -62,6 +63,17 @@ fn default_shell() -> String {
 pub fn terminal_create<R: Runtime>(
     app: AppHandle<R>,
     state: State<'_, TerminalState>,
+    cwd: Option<String>,
+    shell: Option<String>,
+    cols: Option<u16>,
+    rows: Option<u16>,
+) -> Result<TerminalSessionInfo, String> {
+    terminal_create_core(Arc::new(app), &state, cwd, shell, cols, rows)
+}
+
+pub fn terminal_create_core(
+    bridge: Arc<dyn EventBridge>,
+    state: &TerminalState,
     cwd: Option<String>,
     shell: Option<String>,
     cols: Option<u16>,
@@ -111,7 +123,7 @@ pub fn terminal_create<R: Runtime>(
         .map_err(|e| format!("Failed to get PTY writer: {}", e))?;
 
     // Spawn output-forwarding thread
-    let app_clone = app.clone();
+    let bridge_clone = bridge.clone();
     let id_clone = id.clone();
     std::thread::spawn(move || {
         let mut buf = [0u8; 4096];
@@ -121,24 +133,24 @@ pub fn terminal_create<R: Runtime>(
                 Ok(n) => {
                     // Forward raw bytes as a lossy UTF-8 string (xterm handles encoding)
                     let data = String::from_utf8_lossy(&buf[..n]).to_string();
-                    let _ = app_clone.emit(
+                    let _ = bridge_clone.send_event(
                         "terminal:output",
-                        TerminalOutputEvent {
+                        serde_json::json!(TerminalOutputEvent {
                             id: id_clone.clone(),
                             data,
-                        },
+                        }),
                     );
                 }
                 Err(_) => break,
             }
         }
         // Emit exit event
-        let _ = app_clone.emit(
+        let _ = bridge_clone.send_event(
             "terminal:exit",
-            TerminalExitEvent {
+            serde_json::json!(TerminalExitEvent {
                 id: id_clone,
                 exit_code: 0,
-            },
+            }),
         );
     });
 
@@ -170,6 +182,14 @@ pub fn terminal_write(
     id: String,
     data: String,
 ) -> Result<(), String> {
+    terminal_write_core(&state, id, data)
+}
+
+pub fn terminal_write_core(
+    state: &TerminalState,
+    id: String,
+    data: String,
+) -> Result<(), String> {
     let mut mgr = state.0.lock().unwrap();
     let session = mgr
         .sessions
@@ -185,6 +205,15 @@ pub fn terminal_write(
 #[tauri::command]
 pub fn terminal_resize(
     state: State<'_, TerminalState>,
+    id: String,
+    cols: u16,
+    rows: u16,
+) -> Result<(), String> {
+    terminal_resize_core(&state, id, cols, rows)
+}
+
+pub fn terminal_resize_core(
+    state: &TerminalState,
     id: String,
     cols: u16,
     rows: u16,
@@ -210,6 +239,10 @@ pub fn terminal_resize(
 
 #[tauri::command]
 pub fn terminal_close(state: State<'_, TerminalState>, id: String) -> Result<(), String> {
+    terminal_close_core(&state, id)
+}
+
+pub fn terminal_close_core(state: &TerminalState, id: String) -> Result<(), String> {
     let mut mgr = state.0.lock().unwrap();
     if mgr.sessions.remove(&id).is_none() {
         // Already closed — not an error
@@ -220,6 +253,10 @@ pub fn terminal_close(state: State<'_, TerminalState>, id: String) -> Result<(),
 
 #[tauri::command]
 pub fn terminal_list(state: State<'_, TerminalState>) -> Result<Vec<TerminalSessionInfo>, String> {
+    terminal_list_core(&state)
+}
+
+pub fn terminal_list_core(state: &TerminalState) -> Result<Vec<TerminalSessionInfo>, String> {
     let mgr = state.0.lock().unwrap();
     let list = mgr
         .sessions

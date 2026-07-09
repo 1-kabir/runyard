@@ -4,9 +4,10 @@ use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{ChildStdin, Command, Stdio};
 use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Emitter, Runtime, State};
+use tauri::{AppHandle, Runtime, State};
+use crate::EventBridge;
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -45,7 +46,7 @@ pub struct LspManagerInner {
     pub servers: HashMap<String, LspServer>, // keyed by language
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct LspState(pub Arc<Mutex<LspManagerInner>>);
 
 // ─── Known language server executables ───────────────────────────────────────
@@ -133,6 +134,16 @@ pub fn lsp_start<R: Runtime>(
     workspace_path: String,
     path_override: Option<String>,
 ) -> Result<LspServerStatus, String> {
+    lsp_start_core(Arc::new(app), &state, language, workspace_path, path_override)
+}
+
+pub fn lsp_start_core(
+    bridge: Arc<dyn EventBridge>,
+    state: &LspState,
+    language: String,
+    workspace_path: String,
+    path_override: Option<String>,
+) -> Result<LspServerStatus, String> {
     // Check if already running
     {
         let mgr = state.0.lock().unwrap();
@@ -174,7 +185,7 @@ pub fn lsp_start<R: Runtime>(
     let stdout = child.stdout.take().ok_or("Failed to get stdout")?;
 
     // Spawn reader thread
-    let app_clone = app.clone();
+    let bridge_clone = bridge.clone();
     let lang_clone = language.clone();
     let state_clone = state.0.clone();
     std::thread::spawn(move || {
@@ -192,12 +203,12 @@ pub fn lsp_start<R: Runtime>(
                                 }
                             }
                         }
-                        let _ = app_clone.emit(
+                        let _ = bridge_clone.send_event(
                             "lsp:message",
-                            LspMessageEvent {
+                            serde_json::json!(LspMessageEvent {
                                 language: lang_clone.clone(),
                                 message: json,
-                            },
+                            }),
                         );
                     }
                 }
@@ -235,6 +246,14 @@ pub fn lsp_send(
     language: String,
     message: String,
 ) -> Result<(), String> {
+    lsp_send_core(&state, language, message)
+}
+
+pub fn lsp_send_core(
+    state: &LspState,
+    language: String,
+    message: String,
+) -> Result<(), String> {
     let mut mgr = state.0.lock().unwrap();
     let srv = mgr
         .servers
@@ -245,6 +264,10 @@ pub fn lsp_send(
 
 #[tauri::command]
 pub fn lsp_stop(state: State<'_, LspState>, language: String) -> Result<(), String> {
+    lsp_stop_core(&state, language)
+}
+
+pub fn lsp_stop_core(state: &LspState, language: String) -> Result<(), String> {
     let mut mgr = state.0.lock().unwrap();
     mgr.servers.remove(&language);
     // Dropping the LspServer drops stdin, which sends EOF to the server process
@@ -254,6 +277,13 @@ pub fn lsp_stop(state: State<'_, LspState>, language: String) -> Result<(), Stri
 #[tauri::command]
 pub fn lsp_status(
     state: State<'_, LspState>,
+    language: String,
+) -> Result<LspServerStatus, String> {
+    lsp_status_core(&state, language)
+}
+
+pub fn lsp_status_core(
+    state: &LspState,
     language: String,
 ) -> Result<LspServerStatus, String> {
     let mgr = state.0.lock().unwrap();
@@ -275,6 +305,10 @@ pub fn lsp_status(
 
 #[tauri::command]
 pub fn lsp_status_all(state: State<'_, LspState>) -> Result<Vec<LspServerStatus>, String> {
+    lsp_status_all_core(&state)
+}
+
+pub fn lsp_status_all_core(state: &LspState) -> Result<Vec<LspServerStatus>, String> {
     let mgr = state.0.lock().unwrap();
     let statuses = mgr
         .servers

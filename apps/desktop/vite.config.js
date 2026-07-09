@@ -12,6 +12,12 @@ export default defineConfig(async () => ({
   // Vite options tailored for Tauri development
   resolve: {
     alias: {
+      "original-tauri-core": path.resolve(__dirname, "node_modules/@tauri-apps/api/core.js"),
+      "original-tauri-event": path.resolve(__dirname, "node_modules/@tauri-apps/api/event.js"),
+      "original-tauri-window": path.resolve(__dirname, "node_modules/@tauri-apps/api/window.js"),
+      "@tauri-apps/api/core": path.resolve(__dirname, "../../packages/common/src/tauri-mock-core.ts"),
+      "@tauri-apps/api/event": path.resolve(__dirname, "../../packages/common/src/tauri-mock-event.ts"),
+      "@tauri-apps/api/window": path.resolve(__dirname, "../../packages/common/src/tauri-mock-window.ts"),
       "@runyard/ui": path.resolve(__dirname, "../../packages/ui/src/lib"),
       "@runyard/editor": path.resolve(__dirname, "../../packages/editor/src"),
       "@runyard/protocol": path.resolve(__dirname, "../../packages/protocol/src"),

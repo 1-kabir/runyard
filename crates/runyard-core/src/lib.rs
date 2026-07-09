@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 use std::io::Write;
+use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Runtime};
 use notify::{Watcher, RecursiveMode, Config};
 use git2::Repository;
@@ -16,6 +17,17 @@ pub mod lsp_manager;
 // Re-export state types for Tauri setup
 pub use terminal::TerminalState;
 pub use lsp_manager::LspState;
+
+pub trait EventBridge: Send + Sync + 'static {
+    fn send_event(&self, event: &str, payload: serde_json::Value) -> Result<(), String>;
+}
+
+impl<R: Runtime> EventBridge for AppHandle<R> {
+    fn send_event(&self, event: &str, payload: serde_json::Value) -> Result<(), String> {
+        self.emit(event, payload).map_err(|e| e.to_string())
+    }
+}
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FsEntry {
@@ -82,6 +94,10 @@ pub mod commands {
 
     #[tauri::command]
     pub fn fs_watch<R: Runtime>(app: AppHandle<R>, path: String) -> Result<(), String> {
+        fs_watch_core(Arc::new(app), path)
+    }
+
+    pub fn fs_watch_core(bridge: Arc<dyn EventBridge>, path: String) -> Result<(), String> {
         let path_clone = path.clone();
 
         std::thread::spawn(move || {
@@ -94,7 +110,7 @@ pub mod commands {
                 match res {
                     Ok(event) => {
                         for path in event.paths {
-                            let _ = app.emit("fs:changed", path.to_string_lossy().to_string());
+                            let _ = bridge.send_event("fs:changed", serde_json::json!(path.to_string_lossy().to_string()));
                         }
                     }
                     Err(e) => println!("watch error: {:?}", e),

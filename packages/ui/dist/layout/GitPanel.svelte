@@ -467,6 +467,8 @@
     {/if}
 
     <!-- Worktrees -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="section-header clickable" onclick={() => (showWorktrees = !showWorktrees)}>
       <Layers size={12} />
       <span>Worktrees ({worktrees.length})</span>
